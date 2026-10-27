@@ -321,16 +321,18 @@ export default function Catalog({
                       <button
                         type="button"
                         onClick={() => onAddToCart && onAddToCart(product as any, moq)}
-                        className="py-2 px-2.5 rounded-lg bg-[#0A1F44] hover:bg-[#00081E] text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-colors"
+                        className="py-2 px-2.5 rounded-lg bg-[#0A1F44] hover:bg-[#00081E] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                       >
-                        <ShoppingCart size={13} /> Add {moq}
+                        <ShoppingCart size={13} className="text-white" />
+                        <span className="text-white font-bold">Add {moq}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleOpenRfq(`${product.title} (SKU: ${product.sku})`)}
-                        className="py-2 px-2.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] text-[11px] font-bold flex items-center justify-center gap-1 transition-colors"
+                        className="py-2 px-2.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                       >
-                        <FileText size={13} /> RFQ
+                        <FileText size={13} className="text-[#0A1F44]" />
+                        <span className="text-[#0A1F44] font-bold">RFQ</span>
                       </button>
                     </div>
                   </div>

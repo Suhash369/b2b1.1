@@ -138,7 +138,7 @@ export default function Home({
                   type="submit"
                   className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] rounded-lg text-xs font-heading font-semibold tracking-[-0.01em] transition-all shadow-md flex-shrink-0"
                 >
-                  Search
+                  <span className="text-[#0A1F44] font-bold">Search</span>
                 </button>
               </form>
 
@@ -148,16 +148,16 @@ export default function Home({
                   href="/products"
                   className="px-6 py-3 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] font-heading font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 tracking-[-0.01em]"
                 >
-                  <span>I&apos;m a Buyer</span>
-                  <ArrowRight size={16} />
+                  <span className="text-[#0A1F44] font-bold">I&apos;m a Buyer</span>
+                  <ArrowRight size={16} className="text-[#0A1F44]" />
                 </Link>
 
                 <Link
                   href="/supplier/onboarding"
                   className="px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-heading font-semibold text-sm flex items-center gap-2 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 tracking-[-0.01em]"
                 >
-                  <span>I&apos;m a Seller</span>
-                  <Store size={16} />
+                  <span className="text-white font-bold">I&apos;m a Seller</span>
+                  <Store size={16} className="text-white" />
                 </Link>
 
                 <Link
@@ -398,8 +398,8 @@ export default function Home({
                     href="/products"
                     className="px-6 py-3 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] text-xs font-extrabold flex items-center gap-2 shadow-md transition-all"
                   >
-                    <span>Explore Products</span>
-                    <ArrowRight size={15} />
+                    <span className="text-[#0A1F44] font-extrabold">Explore Products</span>
+                    <ArrowRight size={15} className="text-[#0A1F44]" />
                   </Link>
                   <button
                     type="button"
@@ -449,8 +449,8 @@ export default function Home({
                     href="/supplier/onboarding"
                     className="px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-extrabold flex items-center gap-2 shadow-md transition-all"
                   >
-                    <span>Start Selling</span>
-                    <ArrowRight size={15} />
+                    <span className="text-white font-extrabold">Start Selling</span>
+                    <ArrowRight size={15} className="text-white" />
                   </Link>
                   <Link
                     href="/subscription"
@@ -841,7 +841,9 @@ export default function Home({
                           : "bg-[#0A1F44] hover:bg-[#00081E] text-white"
                       }`}
                     >
-                      {plan.ctaText}
+                      <span className={plan.recommended ? "text-[#0A1F44] font-bold" : "text-white font-bold"}>
+                        {plan.ctaText}
+                      </span>
                     </Link>
                   </div>
                 </div>
@@ -873,16 +875,16 @@ export default function Home({
                 href="/products"
                 className="px-8 py-3.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] font-heading font-bold text-sm shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
               >
-                <span>I&apos;m a Buyer</span>
-                <ArrowRight size={16} />
+                <span className="text-[#0A1F44] font-bold">I&apos;m a Buyer</span>
+                <ArrowRight size={16} className="text-[#0A1F44]" />
               </Link>
 
               <Link
                 href="/supplier/onboarding"
                 className="px-8 py-3.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-heading font-bold text-sm shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
               >
-                <span>I&apos;m a Seller</span>
-                <Store size={16} />
+                <span className="text-white font-bold">I&apos;m a Seller</span>
+                <Store size={16} className="text-white" />
               </Link>
             </div>
           </div>

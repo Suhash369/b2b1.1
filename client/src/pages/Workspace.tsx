@@ -117,7 +117,8 @@ export default function Workspace({ cartItems = [] }: WorkspaceProps) {
                   onClick={() => setIsRfqModalOpen(true)}
                   className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2"
                 >
-                  <FileText size={15} /> Create New RFQ
+                  <FileText size={15} className="text-[#0A1F44]" />
+                  <span className="text-[#0A1F44] font-bold">Create New RFQ</span>
                 </button>
               )}
 
@@ -127,7 +128,8 @@ export default function Workspace({ cartItems = [] }: WorkspaceProps) {
                   onClick={() => setIsAddProductOpen(true)}
                   className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2"
                 >
-                  <Plus size={15} /> Add New Listing
+                  <Plus size={15} className="text-[#0A1F44]" />
+                  <span className="text-[#0A1F44] font-bold">Add New Listing</span>
                 </button>
               )}
 

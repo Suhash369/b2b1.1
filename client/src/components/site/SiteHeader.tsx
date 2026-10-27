@@ -150,9 +150,9 @@ export default function SiteHeader({
             />
             <button
               type="submit"
-              className="px-2.5 py-1 bg-[#F59E0B] text-[#0A1F44] rounded-lg text-xs font-bold hover:bg-[#D97706] transition-colors ml-1"
+              className="px-3 py-1 bg-[#F59E0B] text-[#0A1F44] rounded-lg text-xs font-bold hover:bg-[#D97706] transition-colors ml-1 shadow-xs"
             >
-              Search
+              <span className="text-[#0A1F44] font-bold">Search</span>
             </button>
           </form>
 
@@ -172,28 +172,30 @@ export default function SiteHeader({
               </button>
 
               {categoriesOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                <div className="absolute top-full left-0 mt-2 w-72 bg-white text-slate-900 rounded-xl shadow-2xl border border-slate-200 overflow-hidden py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-3.5 py-2 bg-slate-100 border-b border-slate-200 text-[11px] uppercase font-bold text-slate-700 tracking-wider">
                     All Departments
                   </div>
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat.slug}
-                      href={`/products?department=${encodeURIComponent(cat.name)}`}
-                      onClick={() => setCategoriesOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 text-xs text-slate-700 hover:bg-[#F2F3FF] hover:text-[#0051D5] transition-colors"
-                    >
-                      <span>{cat.icon}</span>
-                      <span>{cat.name}</span>
-                    </Link>
-                  ))}
-                  <div className="border-t border-slate-100 p-2">
+                  <div className="py-1">
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.slug}
+                        href={`/products?department=${encodeURIComponent(cat.name)}`}
+                        onClick={() => setCategoriesOpen(false)}
+                        className="flex items-center gap-3 px-3.5 py-2.5 text-xs text-slate-800 font-semibold hover:bg-[#F2F3FF] hover:text-[#0051D5] transition-colors group"
+                      >
+                        <span className="text-base flex-shrink-0">{cat.icon}</span>
+                        <span className="text-slate-800 group-hover:text-[#0051D5] font-semibold">{cat.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="border-t border-slate-200 p-2.5 bg-slate-50/70">
                     <Link
                       href="/products"
                       onClick={() => setCategoriesOpen(false)}
-                      className="block w-full text-center py-1.5 rounded-lg bg-[#0A1F44] text-white text-[11px] font-bold hover:bg-[#00081E] transition-colors"
+                      className="flex items-center justify-center w-full py-2 rounded-lg bg-[#0A1F44] hover:bg-[#00081E] text-white text-xs font-bold transition-colors shadow-sm"
                     >
-                      Explore All Categories →
+                      <span className="text-white font-bold">Explore All Categories →</span>
                     </Link>
                   </div>
                 </div>
@@ -277,7 +279,7 @@ export default function SiteHeader({
                   href="/register"
                   className="px-3.5 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] rounded-lg text-xs font-bold transition-all shadow-sm"
                 >
-                  Register
+                  <span className="text-[#0A1F44] font-bold">Register</span>
                 </Link>
               </div>
             )}

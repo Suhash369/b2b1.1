@@ -7,6 +7,20 @@
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-manrope: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 :root {
@@ -25,6 +39,20 @@
   --shadow-soft: 0 14px 40px rgba(10, 31, 68, 0.08);
   --background: var(--white);
   --foreground: var(--ink);
+
+  --primary: #0A1F44;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #0A1F44;
+  --muted: #F8FAFC;
+  --muted-foreground: #64748B;
+  --accent: #F1F5F9;
+  --accent-foreground: #0A1F44;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  --input: #CBD5E1;
+  --ring: #2563EB;
 
   /* Typography Font Families */
   --font-heading: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -62,88 +90,93 @@
   --type-nav-tracking: -0.01em;
 }
 
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  margin: 0;
-  background: var(--white);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-  letter-spacing: var(--type-body-tracking);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--white);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--type-body-size);
+    line-height: var(--type-body-line);
+    letter-spacing: var(--type-body-tracking);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
 
-/* Headings: Manrope 800 for hero, 700 for section headings */
-h1 {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: var(--type-hero-size);
-  line-height: var(--type-hero-line);
-  letter-spacing: var(--type-hero-tracking);
-  text-wrap: balance;
-  margin: 0;
-}
+  /* Headings: Manrope 800 for hero, 700 for section headings */
+  h1 {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: var(--type-hero-size);
+    line-height: var(--type-hero-line);
+    letter-spacing: var(--type-hero-tracking);
+    text-wrap: balance;
+    margin: 0;
+  }
 
-h2 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: var(--type-h2-size);
-  line-height: var(--type-h2-line);
-  letter-spacing: var(--type-h2-tracking);
-  text-wrap: balance;
-  margin: 0;
-}
+  h2 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--type-h2-size);
+    line-height: var(--type-h2-line);
+    letter-spacing: var(--type-h2-tracking);
+    text-wrap: balance;
+    margin: 0;
+  }
 
-h3 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: var(--type-h3-size);
-  line-height: var(--type-h3-line);
-  letter-spacing: var(--type-h3-tracking);
-  text-wrap: balance;
-  margin: 0;
-}
+  h3 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--type-h3-size);
+    line-height: var(--type-h3-line);
+    letter-spacing: var(--type-h3-tracking);
+    text-wrap: balance;
+    margin: 0;
+  }
 
-h4 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: var(--type-h4-size);
-  line-height: var(--type-h4-line);
-  letter-spacing: var(--type-h4-tracking);
-  text-wrap: balance;
-  margin: 0;
-}
+  h4 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--type-h4-size);
+    line-height: var(--type-h4-line);
+    letter-spacing: var(--type-h4-tracking);
+    text-wrap: balance;
+    margin: 0;
+  }
 
-/* Navigation: Manrope 600 */
-nav a, .nav-link, .nav-item, .nav-action-link, .type-nav {
-  font-family: var(--font-nav);
-  font-weight: 600;
-  letter-spacing: var(--type-nav-tracking);
-}
+  /* Navigation: Manrope 600 */
+  nav a, .nav-link, .nav-item, .nav-action-link, .type-nav {
+    font-family: var(--font-nav);
+    font-weight: 600;
+    letter-spacing: var(--type-nav-tracking);
+  }
 
-/* Buttons: Manrope 600/700 */
-button, .button, [role="button"], input[type="submit"], input[type="button"] {
-  font-family: var(--font-btn);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
+  /* Buttons: Manrope 600/700 */
+  button, .button, [role="button"], input[type="submit"], input[type="button"] {
+    font-family: var(--font-btn);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
 
-/* Forms & Inputs: Inter 400 for input values, Inter 500 for labels */
-input, textarea, select {
-  font-family: var(--font-body);
-  font-weight: 400;
-}
+  /* Forms & Inputs: Inter 400 for input values, Inter 500 for labels */
+  input, textarea, select {
+    font-family: var(--font-body);
+    font-weight: 400;
+  }
 
-label, .form-label, .type-label {
-  font-family: var(--font-body);
-  font-weight: 500;
-  font-size: var(--type-label-size);
-  letter-spacing: var(--type-label-tracking);
+  label, .form-label, .type-label {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--type-label-size);
+    letter-spacing: var(--type-label-tracking);
+  }
+
+  button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid rgba(245, 158, 11, 0.55); outline-offset: 3px; }
+  a { color: inherit; text-decoration: none; }
 }
 
 /* Product names, prices, key data: Inter 600 with tabular figures */
@@ -193,9 +226,6 @@ label, .form-label, .type-label {
   line-height: var(--type-body-line) !important;
   letter-spacing: var(--type-body-tracking) !important;
 }
-
-button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid rgba(245, 158, 11, 0.55); outline-offset: 3px; }
-a { color: inherit; text-decoration: none; }
 
 .shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
 .app-shell { min-height: 100vh; overflow: hidden; }

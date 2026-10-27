@@ -175,14 +175,16 @@ export default function QuickViewModal({
                 onClick={handleAddToCart}
                 className="py-2.5 px-3 rounded-xl bg-[#0A1F44] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-[#00081E] transition-colors shadow-sm"
               >
-                <ShoppingCart size={15} /> Add to Cart
+                <ShoppingCart size={15} className="text-white" />
+                <span className="text-white font-bold">Add to Cart</span>
               </button>
               <button
                 type="button"
                 onClick={handleRfq}
                 className="py-2.5 px-3 rounded-xl bg-[#F59E0B] text-[#0A1F44] text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-[#D97706] transition-colors shadow-sm"
               >
-                <FileText size={15} /> Custom RFQ
+                <FileText size={15} className="text-[#0A1F44]" />
+                <span className="text-[#0A1F44] font-bold">Custom RFQ</span>
               </button>
             </div>
           </div>

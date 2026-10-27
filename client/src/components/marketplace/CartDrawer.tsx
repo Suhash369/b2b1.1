@@ -195,14 +195,16 @@ export default function CartDrawer({
                 onClick={onOpenGstInvoice}
                 className="py-2.5 px-2 border border-[#CBD5E1] rounded-xl text-xs font-heading font-semibold text-[#0A1F44] hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors tracking-[-0.01em]"
               >
-                <FileCheck size={14} className="text-[#0D9488]" /> View GST Invoice
+                <FileCheck size={14} className="text-[#0D9488]" />
+                <span className="text-[#0A1F44] font-semibold">View GST Invoice</span>
               </button>
               <button
                 type="button"
                 onClick={onProceedCheckout}
                 className="py-2.5 px-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] rounded-xl text-xs font-heading font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm tracking-[-0.01em]"
               >
-                Checkout <ArrowRight size={14} />
+                <span className="text-[#0A1F44] font-bold">Checkout</span>
+                <ArrowRight size={14} className="text-[#0A1F44]" />
               </button>
             </div>
 

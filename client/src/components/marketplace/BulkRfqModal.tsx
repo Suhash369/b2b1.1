@@ -324,7 +324,9 @@ export default function BulkRfqModal({
                 disabled={createRfqMutation.isPending}
                 className="px-6 py-2.5 bg-[#F59E0B] text-[#0F172A] rounded-xl text-xs font-bold hover:bg-[#D97706] transition-all flex items-center gap-2 shadow-sm disabled:opacity-60"
               >
-                {createRfqMutation.isPending ? "Submitting Brief..." : "Submit Commercial RFQ"}
+                <span className="text-[#0F172A] font-bold">
+                  {createRfqMutation.isPending ? "Submitting Brief..." : "Submit Commercial RFQ"}
+                </span>
               </button>
             </div>
           </form>
