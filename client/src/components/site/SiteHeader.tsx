@@ -138,27 +138,6 @@ export default function SiteHeader({
             </div>
           </Link>
 
-          {/* Search Bar (Desktop) */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="hidden md:flex flex-1 max-w-md items-center bg-white/10 hover:bg-white/15 focus-within:bg-white focus-within:text-slate-900 text-white rounded-xl px-3 py-1.5 border border-white/20 transition-all"
-          >
-            <Search size={16} className="text-slate-300 mr-2 flex-shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 500,000+ MRO parts, wholesale lots, SKU..."
-              className="w-full bg-transparent text-xs placeholder:text-slate-400 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="px-2.5 py-1 bg-[#FF7A00] text-white rounded-lg text-xs font-bold hover:bg-[#E06B00] transition-colors ml-1 shadow-xs"
-            >
-              Search
-            </button>
-          </form>
-
           {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center gap-5 text-xs font-semibold text-slate-200">
             {/* Products & Categories Dropdown */}

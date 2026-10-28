@@ -778,6 +778,44 @@
       "createdAt": "2026-10-28T09:45:31.221Z",
       "updatedAt": "2026-10-28T09:45:31.221Z",
       "lastSignedIn": "2026-10-28T09:45:31.221Z"
+    },
+    {
+      "id": 42,
+      "openId": "usr_1793181145672",
+      "name": "Acme Chief Buyer",
+      "email": "buyer_1793181145517@acmeprocure.in",
+      "phone": "+91 98765 43210",
+      "companyName": "Acme Industrial Sourcing LLP",
+      "gstNumber": null,
+      "address": null,
+      "city": "Coimbatore",
+      "state": "Tamil Nadu",
+      "loginMethod": "credentials",
+      "role": "buyer",
+      "isVerified": false,
+      "passwordHash": "7451b573e5bec81ae88f2e2b2266058a:27e6b39996f674025f5bd2f8c731f3ae55fb0acab524be5aa481ce660cf599408dca2a5bf77e8ac7364d721eced284e6d5376595b9f6af5e363d6c0cd77caac6",
+      "createdAt": "2026-10-28T09:52:25.717Z",
+      "updatedAt": "2026-10-28T09:52:25.868Z",
+      "lastSignedIn": "2026-10-28T09:52:25.868Z"
+    },
+    {
+      "id": 43,
+      "openId": "usr_1793181145771",
+      "name": "Apex Precision Lead",
+      "email": "seller_1793181145517@oemfactories.in",
+      "phone": "+91 91234 56789",
+      "companyName": "Apex Precision Components OEM",
+      "gstNumber": "33AAACA1234B1Z5",
+      "address": null,
+      "city": "Hosur",
+      "state": "Tamil Nadu",
+      "loginMethod": "credentials",
+      "role": "seller",
+      "isVerified": false,
+      "passwordHash": "7070c27a30db3ff3da1cf3eae311034d:15bd16fd5effc86e7bb22fbfbf7ad7c14328b329509ff41178c6305076623b3e21ce618b01c985e8cd75ea229e99316d8a8ad013042b4e9fb79cd2263ebc6fd4",
+      "createdAt": "2026-10-28T09:52:25.815Z",
+      "updatedAt": "2026-10-28T09:52:25.815Z",
+      "lastSignedIn": "2026-10-28T09:52:25.815Z"
     }
   ],
   "categories": [
@@ -1016,9 +1054,56 @@
       "isPublished": true,
       "createdAt": "2026-10-28T09:45:31.327Z",
       "updatedAt": "2026-10-28T09:45:31.327Z"
+    },
+    {
+      "id": "bzk-1793181145917",
+      "title": "Precision CNC Machined Brass Bushing (100-Pack)",
+      "slug": "precision-cnc-machined-brass-bushing-100-pack-",
+      "department": "Electrical & Electronics",
+      "categoryId": null,
+      "supplierId": 43,
+      "supplierName": "Apex Precision Components OEM",
+      "price": "4500",
+      "mrp": "6000",
+      "discount": "25% off",
+      "moq": 5,
+      "inStock": true,
+      "rating": null,
+      "reviews": 0,
+      "sku": "BZK-CNC-5517",
+      "badge": null,
+      "badgeColor": null,
+      "imageAlt": "Precision CNC Machined Brass Bushing (100-Pack)",
+      "imageUrl": "https://example.com/brass-bushing.jpg",
+      "specs": null,
+      "leadTime": "3-5 Working Days",
+      "origin": "Hosur, Tamil Nadu",
+      "hsnCode": "848330",
+      "isPublished": true,
+      "createdAt": "2026-10-28T09:52:25.917Z",
+      "updatedAt": "2026-10-28T09:52:25.917Z"
     }
   ],
   "rfqs": [
+    {
+      "id": "rfq_1793181145921",
+      "rfqNumber": "RFQ-BZK-2026-0018",
+      "buyerId": 42,
+      "buyerName": "Acme Chief Buyer",
+      "buyerEmail": "buyer_1793181145517@acmeprocure.in",
+      "buyerPhone": "+91 98765 43210",
+      "category": "Electrical & Electronics",
+      "title": "Bulk Procurement: 50 Sets Brass Bushings",
+      "description": "Require certified brass bushings batch for industrial assembly line.",
+      "quantity": 50,
+      "unit": "Packs",
+      "targetPrice": "4200",
+      "destinationCity": "Coimbatore",
+      "requiredDate": "Within 14 Days",
+      "status": "quoted",
+      "createdAt": "2026-10-28T09:52:25.921Z",
+      "updatedAt": "2026-10-28T09:52:25.974Z"
+    },
     {
       "id": "rfq_1793180731332",
       "rfqNumber": "RFQ-BZK-2026-0017",
@@ -1344,6 +1429,22 @@
     }
   ],
   "quotes": [
+    {
+      "id": "qt_1793181145974",
+      "quoteNumber": "QT-BZK-0019",
+      "rfqId": "rfq_1793181145921",
+      "supplierId": 43,
+      "supplierName": "Apex Precision Components OEM",
+      "unitPrice": "4150",
+      "totalAmount": "207500",
+      "moq": 50,
+      "deliveryDays": 5,
+      "validUntil": "30 Days from Issue",
+      "paymentTerms": "100% Proforma against GST Invoice",
+      "notes": "Direct OEM supply from Hosur factory with Mill Test Certificates.",
+      "status": "pending",
+      "createdAt": "2026-10-28T09:52:25.974Z"
+    },
     {
       "id": "qt_1793180731382",
       "quoteNumber": "QT-BZK-0018",
@@ -1679,6 +1780,236 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_1793181145979_645",
+      "userId": 42,
+      "title": "Quotation Received",
+      "message": "Apex Precision Components OEM submitted quotation QT-BZK-0019 (₹207500) for RFQ RFQ-BZK-2026-0018",
+      "type": "quote",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.979Z"
+    },
+    {
+      "id": "notif_1793181145970_512",
+      "userId": 43,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.970Z"
+    },
+    {
+      "id": "notif_1793181145968_176",
+      "userId": 41,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.968Z"
+    },
+    {
+      "id": "notif_1793181145966_415",
+      "userId": 39,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.966Z"
+    },
+    {
+      "id": "notif_1793181145964_7",
+      "userId": 37,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.964Z"
+    },
+    {
+      "id": "notif_1793181145961_72",
+      "userId": 35,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.961Z"
+    },
+    {
+      "id": "notif_1793181145959_223",
+      "userId": 33,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.959Z"
+    },
+    {
+      "id": "notif_1793181145957_249",
+      "userId": 31,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.957Z"
+    },
+    {
+      "id": "notif_1793181145955_85",
+      "userId": 29,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.955Z"
+    },
+    {
+      "id": "notif_1793181145952_413",
+      "userId": 28,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.952Z"
+    },
+    {
+      "id": "notif_1793181145950_51",
+      "userId": 26,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.950Z"
+    },
+    {
+      "id": "notif_1793181145948_254",
+      "userId": 24,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.948Z"
+    },
+    {
+      "id": "notif_1793181145946_276",
+      "userId": 22,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.946Z"
+    },
+    {
+      "id": "notif_1793181145944_847",
+      "userId": 20,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.944Z"
+    },
+    {
+      "id": "notif_1793181145942_130",
+      "userId": 18,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.942Z"
+    },
+    {
+      "id": "notif_1793181145940_156",
+      "userId": 16,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.940Z"
+    },
+    {
+      "id": "notif_1793181145937_390",
+      "userId": 15,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.937Z"
+    },
+    {
+      "id": "notif_1793181145935_383",
+      "userId": 14,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.935Z"
+    },
+    {
+      "id": "notif_1793181145933_217",
+      "userId": 12,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.933Z"
+    },
+    {
+      "id": "notif_1793181145931_164",
+      "userId": 10,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.931Z"
+    },
+    {
+      "id": "notif_1793181145929_568",
+      "userId": 8,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.929Z"
+    },
+    {
+      "id": "notif_1793181145926_469",
+      "userId": 5,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.926Z"
+    },
+    {
+      "id": "notif_1793181145924_148",
+      "userId": 2,
+      "title": "New RFQ Received",
+      "message": "Acme Chief Buyer requested quote for 50 Packs of \"Bulk Procurement: 50 Sets Brass Bushings\"",
+      "type": "rfq",
+      "link": "/workspace",
+      "isRead": false,
+      "createdAt": "2026-10-28T09:52:25.924Z"
+    },
     {
       "id": "notif_1793180731387_665",
       "userId": 40,
