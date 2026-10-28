@@ -132,8 +132,8 @@ export default function SiteHeader({
               <span className="font-heading font-extrabold text-xl text-white tracking-tight leading-none">
                 Bazro<span className="text-[#FF7A00]">Kart</span>
               </span>
-              <span className="text-[10px] tracking-widest uppercase font-semibold text-[#94A3B8] leading-tight font-heading">
-                B2B Marketplace
+              <span className="text-[9px] tracking-wider whitespace-nowrap uppercase font-semibold text-[#94A3B8] leading-tight font-heading">
+                International Products • Indian Manufacturing
               </span>
             </div>
           </Link>
