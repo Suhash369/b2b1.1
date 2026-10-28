@@ -16,7 +16,7 @@ function latLonToVector3(lat: number, lon: number, radius: number): THREE.Vector
 }
 
 // ---------------------------------------------------------------------------
-// 1. HIGH-RESOLUTION PROCEDURAL WORLD MAP & CONTINENT TEXTURE
+// 1. PROCEDURAL WORLD CONTINENTS & INDUSTRIAL CITY LIGHTS TEXTURE
 // ---------------------------------------------------------------------------
 function createProceduralEarthTexture(): THREE.CanvasTexture {
   const width = 2048;
@@ -30,21 +30,20 @@ function createProceduralEarthTexture(): THREE.CanvasTexture {
     return new THREE.CanvasTexture(canvas);
   }
 
-  // A. Deep Oceanic Midnight Gradient
+  // Deep Oceanic Midnight Gradient
   const oceanGrad = ctx.createLinearGradient(0, 0, 0, height);
-  oceanGrad.addColorStop(0, "#050B17");
-  oceanGrad.addColorStop(0.3, "#081426");
-  oceanGrad.addColorStop(0.7, "#09172E");
-  oceanGrad.addColorStop(1, "#040914");
+  oceanGrad.addColorStop(0, "#040814");
+  oceanGrad.addColorStop(0.3, "#071224");
+  oceanGrad.addColorStop(0.7, "#08162b");
+  oceanGrad.addColorStop(1, "#030610");
   ctx.fillStyle = oceanGrad;
   ctx.fillRect(0, 0, width, height);
 
-  // B. Subtle Nautical Graticule Grid (Meridians & Parallels)
+  // Nautical Graticule Grid
   ctx.strokeStyle = "rgba(14, 165, 233, 0.08)";
   ctx.lineWidth = 1;
   ctx.setLineDash([4, 6]);
 
-  // Longitude lines every 30 deg
   for (let lon = -180; lon <= 180; lon += 30) {
     const x = ((lon + 180) / 360) * width;
     ctx.beginPath();
@@ -53,7 +52,6 @@ function createProceduralEarthTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  // Latitude lines every 30 deg
   for (let lat = -90; lat <= 90; lat += 30) {
     const y = ((90 - lat) / 180) * height;
     ctx.beginPath();
@@ -71,25 +69,22 @@ function createProceduralEarthTexture(): THREE.CanvasTexture {
   ctx.lineTo(width, height / 2);
   ctx.stroke();
 
-  ctx.setLineDash([]); // Reset line dash
+  ctx.setLineDash([]);
 
-  // Helper to convert lat/lon to canvas (x, y)
   const mapPoint = (lat: number, lon: number): [number, number] => {
     const x = ((lon + 180) / 360) * width;
     const y = ((90 - lat) / 180) * height;
     return [x, y];
   };
 
-  // C. Draw Realistic Continent Silhouettes with Glowing Coastlines
   const drawContinent = (
     points: [number, number][],
-    glowColor = "rgba(6, 182, 212, 0.45)",
+    glowColor = "rgba(6, 182, 212, 0.5)",
     fillColor = "#0F1F38",
     innerColor = "#162E52"
   ) => {
     if (points.length < 3) return;
 
-    // Glowing coastal rim
     ctx.save();
     ctx.shadowColor = glowColor;
     ctx.shadowBlur = 14;
@@ -109,7 +104,6 @@ function createProceduralEarthTexture(): THREE.CanvasTexture {
     ctx.stroke();
     ctx.restore();
 
-    // Inner contour shading for depth
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(startX, startY);
@@ -124,136 +118,51 @@ function createProceduralEarthTexture(): THREE.CanvasTexture {
     ctx.restore();
   };
 
-  // 1. Indian Subcontinent & South Asia
+  // Indian Subcontinent
   drawContinent(
     [
       [36, 74], [34, 78], [30, 81], [27, 88], [24, 91], [22, 92], [21, 89], [22, 87],
       [19, 85], [16, 82], [13, 80], [10, 79], [8.3, 77.5], [8.5, 77.0], [11, 75.8],
       [15, 73.8], [19, 72.8], [21, 72.5], [23, 68.5], [24.5, 68.2], [28, 70], [32, 73], [35, 74]
     ],
-    "rgba(255, 122, 0, 0.8)",
+    "rgba(255, 122, 0, 0.85)",
     "#192D4A",
     "#223C63"
   );
+  drawContinent([[9.8, 80.2], [8.5, 81.2], [6.0, 80.7], [6.8, 79.8], [8.5, 79.7]], "rgba(255, 122, 0, 0.7)", "#192D4A");
 
-  // Sri Lanka
-  drawContinent(
-    [[9.8, 80.2], [8.5, 81.2], [6.0, 80.7], [6.8, 79.8], [8.5, 79.7]],
-    "rgba(255, 122, 0, 0.65)",
-    "#192D4A"
-  );
-
-  // 2. Southeast Asia & Malay Peninsula
-  drawContinent(
-    [
-      [22, 92], [22, 108], [11, 109], [8.5, 105], [13, 101], [1, 104], [3, 98], [14, 98], [21, 93]
-    ],
-    "rgba(6, 182, 212, 0.5)",
-    "#132644"
-  );
-
-  // Indonesia / Sumatra / Java / Borneo
+  // Southeast Asia & Malay
+  drawContinent([[22, 92], [22, 108], [11, 109], [8.5, 105], [13, 101], [1, 104], [3, 98], [14, 98], [21, 93]], "rgba(6, 182, 212, 0.5)", "#132644");
   drawContinent([[5, 95], [2, 98], [-4, 105], [-6, 103], [0, 98]], "rgba(6, 182, 212, 0.4)", "#11223D");
   drawContinent([[-6, 106], [-7, 114], [-8, 114], [-7, 106]], "rgba(6, 182, 212, 0.4)", "#11223D");
   drawContinent([[4, 117], [0, 118], [-4, 115], [-2, 110], [5, 112]], "rgba(6, 182, 212, 0.4)", "#11223D");
 
-  // 3. East Asia (China, Korea, Japan)
-  drawContinent(
-    [
-      [22, 108], [26, 120], [32, 121], [39, 118], [40, 124], [43, 131], [48, 135],
-      [53, 120], [45, 100], [40, 80], [34, 78], [24, 91], [22, 108]
-    ],
-    "rgba(6, 182, 212, 0.5)",
-    "#142642"
-  );
+  // East Asia & Japan
+  drawContinent([[22, 108], [26, 120], [32, 121], [39, 118], [40, 124], [43, 131], [48, 135], [53, 120], [45, 100], [40, 80], [34, 78], [24, 91], [22, 108]], "rgba(6, 182, 212, 0.5)", "#142642");
+  drawContinent([[44, 143], [42, 141], [36, 138], [33, 131], [34, 135], [40, 141]], "rgba(6, 182, 212, 0.45)", "#142642");
 
-  // Japan
-  drawContinent(
-    [[44, 143], [42, 141], [36, 138], [33, 131], [34, 135], [40, 141]],
-    "rgba(6, 182, 212, 0.45)",
-    "#142642"
-  );
+  // Middle East & Arabia
+  drawContinent([[31, 35], [32, 40], [30, 48], [27, 50], [25, 55], [24, 57], [22, 59], [17, 54], [12.5, 44], [13, 43], [20, 39], [28, 34], [31, 35]], "rgba(245, 158, 11, 0.6)", "#162740");
+  drawContinent([[37, 44], [39, 50], [37, 59], [31, 62], [25, 62], [27, 56], [30, 48], [37, 44]], "rgba(6, 182, 212, 0.4)", "#13243D");
 
-  // 4. Middle East & Arabian Peninsula
-  drawContinent(
-    [
-      [31, 35], [32, 40], [30, 48], [27, 50], [25, 55], [24, 57], [22, 59], [17, 54],
-      [12.5, 44], [13, 43], [20, 39], [28, 34], [31, 35]
-    ],
-    "rgba(245, 158, 11, 0.6)",
-    "#162740"
-  );
+  // Europe & UK
+  drawContinent([[36, -6], [43, -9], [48, -4], [50, 1], [54, 8], [58, 5], [62, 10], [70, 25], [60, 30], [55, 37], [45, 35], [41, 28], [37, 24], [38, 15], [44, 8], [38, 0], [36, -6]], "rgba(6, 182, 212, 0.5)", "#142540");
+  drawContinent([[50, -5], [54, -3], [58, -4], [56, -6], [51, -1]], "rgba(6, 182, 212, 0.45)", "#142540");
 
-  // Iran & Central Asia
-  drawContinent(
-    [
-      [37, 44], [39, 50], [37, 59], [31, 62], [25, 62], [27, 56], [30, 48], [37, 44]
-    ],
-    "rgba(6, 182, 212, 0.4)",
-    "#13243D"
-  );
+  // Africa
+  drawContinent([[36, -6], [37, 10], [32, 31], [28, 34], [12, 44], [11, 51], [0, 42], [-12, 40], [-26, 33], [-34, 26], [-34, 18], [-22, 14], [-5, 12], [4, 9], [6, 2], [5, -4], [14, -17], [21, -17], [28, -12], [35, -2], [36, -6]], "rgba(6, 182, 212, 0.45)", "#112035");
 
-  // 5. Europe
-  drawContinent(
-    [
-      [36, -6], [43, -9], [48, -4], [50, 1], [54, 8], [58, 5], [62, 10], [70, 25],
-      [60, 30], [55, 37], [45, 35], [41, 28], [37, 24], [38, 15], [44, 8], [38, 0], [36, -6]
-    ],
-    "rgba(6, 182, 212, 0.5)",
-    "#142540"
-  );
+  // North America
+  drawContinent([[70, -160], [71, -125], [60, -75], [50, -55], [44, -65], [30, -81], [25, -80], [28, -96], [20, -97], [16, -92], [9, -78], [15, -92], [22, -106], [32, -117], [48, -124], [58, -140], [65, -168], [70, -160]], "rgba(6, 182, 212, 0.5)", "#122238");
 
-  // UK & Ireland
-  drawContinent(
-    [[50, -5], [54, -3], [58, -4], [56, -6], [51, -1]],
-    "rgba(6, 182, 212, 0.45)",
-    "#142540"
-  );
+  // South America
+  drawContinent([[11, -74], [10, -62], [4, -51], [-3, -40], [-8, -35], [-23, -43], [-34, -53], [-53, -68], [-54, -72], [-40, -73], [-18, -71], [-5, -80], [2, -78], [11, -74]], "rgba(6, 182, 212, 0.5)", "#122238");
 
-  // 6. Africa
-  drawContinent(
-    [
-      [36, -6], [37, 10], [32, 31], [28, 34], [12, 44], [11, 51], [0, 42], [-12, 40],
-      [-26, 33], [-34, 26], [-34, 18], [-22, 14], [-5, 12], [4, 9], [6, 2], [5, -4],
-      [14, -17], [21, -17], [28, -12], [35, -2], [36, -6]
-    ],
-    "rgba(6, 182, 212, 0.45)",
-    "#112035"
-  );
+  // Australia
+  drawContinent([[-12, 131], [-14, 136], [-12, 142], [-23, 151], [-33, 152], [-38, 147], [-37, 139], [-34, 115], [-22, 114], [-15, 124], [-12, 131]], "rgba(6, 182, 212, 0.5)", "#122238");
 
-  // 7. North America
-  drawContinent(
-    [
-      [70, -160], [71, -125], [60, -75], [50, -55], [44, -65], [30, -81], [25, -80],
-      [28, -96], [20, -97], [16, -92], [9, -78], [15, -92], [22, -106], [32, -117],
-      [48, -124], [58, -140], [65, -168], [70, -160]
-    ],
-    "rgba(6, 182, 212, 0.45)",
-    "#122238"
-  );
-
-  // 8. South America
-  drawContinent(
-    [
-      [11, -74], [10, -62], [4, -51], [-3, -40], [-8, -35], [-23, -43], [-34, -53],
-      [-53, -68], [-54, -72], [-40, -73], [-18, -71], [-5, -80], [2, -78], [11, -74]
-    ],
-    "rgba(6, 182, 212, 0.45)",
-    "#122238"
-  );
-
-  // 9. Australia
-  drawContinent(
-    [
-      [-12, 131], [-14, 136], [-12, 142], [-23, 151], [-33, 152], [-38, 147],
-      [-37, 139], [-34, 115], [-22, 114], [-15, 124], [-12, 131]
-    ],
-    "rgba(6, 182, 212, 0.45)",
-    "#122238"
-  );
-
-  // D. Glowing Industrial Belts & City Light Clusters (B2B Hubs)
-  const drawCityCluster = (lat: number, lon: number, radius = 6, color = "#FFB020", intensity = 0.95) => {
+  // Global City Light Clusters Across All Continents
+  const drawCityCluster = (lat: number, lon: number, radius = 6, color = "#FFB020") => {
     const [cx, cy] = mapPoint(lat, lon);
     const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 3.5);
     grad.addColorStop(0, color);
@@ -261,59 +170,55 @@ function createProceduralEarthTexture(): THREE.CanvasTexture {
     grad.addColorStop(0.7, "rgba(245, 158, 11, 0.25)");
     grad.addColorStop(1, "rgba(255, 122, 0, 0)");
     ctx.fillStyle = grad;
-    ctx.globalAlpha = intensity;
     ctx.beginPath();
     ctx.arc(cx, cy, radius * 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Hot center pin
     ctx.fillStyle = "#FFFFFF";
-    ctx.globalAlpha = 1.0;
     ctx.beginPath();
     ctx.arc(cx, cy, radius * 0.45, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1.0;
   };
 
-  // Indian Industrial Hubs
-  drawCityCluster(19.076, 72.877, 9, "#FF7A00", 1.0); // Mumbai (Central Port & B2B Hub)
-  drawCityCluster(28.613, 77.209, 8, "#FFA336", 0.95); // Delhi NCR
-  drawCityCluster(12.971, 77.594, 7, "#FFB84D", 0.9); // Bengaluru
-  drawCityCluster(13.082, 80.27, 7, "#FF921F", 0.9); // Chennai Port
-  drawCityCluster(23.022, 72.571, 7, "#FF921F", 0.9); // Gujarat / Ahmedabad
-  drawCityCluster(22.572, 88.363, 7, "#FFA336", 0.85); // Kolkata
-  drawCityCluster(17.385, 78.486, 6, "#FFB84D", 0.85); // Hyderabad
+  // Indian Subcontinent
+  drawCityCluster(19.076, 72.877, 9, "#FF7A00"); // Mumbai
+  drawCityCluster(28.613, 77.209, 8, "#FFA336"); // Delhi NCR
+  drawCityCluster(12.971, 77.594, 7, "#FFB84D"); // Bengaluru
+  drawCityCluster(13.082, 80.27, 7, "#FF921F"); // Chennai
+  drawCityCluster(23.022, 72.571, 7, "#FF921F"); // Gujarat
+  drawCityCluster(22.572, 88.363, 7, "#FFA336"); // Kolkata
 
-  // International Gateways
-  drawCityCluster(25.204, 55.27, 8, "#38BDF8", 0.95); // Dubai
-  drawCityCluster(1.352, 103.819, 8, "#38BDF8", 0.95); // Singapore
-  drawCityCluster(31.23, 121.473, 8, "#38BDF8", 0.9); // Shanghai
-  drawCityCluster(50.11, 8.682, 7, "#38BDF8", 0.9); // Frankfurt / Europe
-  drawCityCluster(40.712, -74.006, 7, "#38BDF8", 0.9); // New York
+  // East & Southeast Asia
+  drawCityCluster(1.352, 103.819, 8, "#38BDF8"); // Singapore
+  drawCityCluster(31.23, 121.473, 9, "#38BDF8"); // Shanghai
+  drawCityCluster(35.676, 139.65, 8, "#38BDF8"); // Tokyo
+  drawCityCluster(22.319, 114.169, 7, "#38BDF8"); // Hong Kong
+  drawCityCluster(39.904, 116.407, 8, "#38BDF8"); // Beijing
 
-  // E. Luminous Overland Highway Grid
-  ctx.strokeStyle = "rgba(255, 163, 54, 0.55)";
-  ctx.lineWidth = 2.0;
-  ctx.setLineDash([3, 4]);
+  // Middle East & Africa
+  drawCityCluster(25.204, 55.27, 9, "#38BDF8"); // Dubai
+  drawCityCluster(24.713, 46.675, 7, "#F59E0B"); // Riyadh
+  drawCityCluster(30.044, 31.236, 7, "#F59E0B"); // Cairo
+  drawCityCluster(-26.204, 28.047, 7, "#F59E0B"); // Johannesburg
 
-  const drawHighway = (stops: [number, number][]) => {
-    ctx.beginPath();
-    const [x0, y0] = mapPoint(stops[0][0], stops[0][1]);
-    ctx.moveTo(x0, y0);
-    for (let i = 1; i < stops.length; i++) {
-      const [xi, yi] = mapPoint(stops[i][0], stops[i][1]);
-      ctx.lineTo(xi, yi);
-    }
-    ctx.stroke();
-  };
+  // Europe
+  drawCityCluster(50.11, 8.682, 8, "#38BDF8"); // Frankfurt
+  drawCityCluster(51.507, -0.128, 8, "#38BDF8"); // London
+  drawCityCluster(48.856, 2.352, 7, "#38BDF8"); // Paris
+  drawCityCluster(51.924, 4.478, 8, "#38BDF8"); // Rotterdam
 
-  // Indian Industrial Corridor
-  drawHighway([[19.07, 72.87], [23.02, 72.57], [28.61, 77.2], [22.57, 88.36], [13.08, 80.27], [12.97, 77.59], [19.07, 72.87]]);
+  // North America
+  drawCityCluster(40.712, -74.006, 9, "#38BDF8"); // New York
+  drawCityCluster(34.052, -118.244, 9, "#38BDF8"); // Los Angeles
+  drawCityCluster(41.878, -87.629, 8, "#38BDF8"); // Chicago
+  drawCityCluster(37.774, -122.419, 7, "#38BDF8"); // San Francisco
+  drawCityCluster(25.761, -80.191, 7, "#38BDF8"); // Miami
 
-  // Trans-Eurasian Corridor
-  drawHighway([[19.07, 72.87], [25.2, 55.27], [32.0, 44.0], [41.0, 28.0], [50.11, 8.68]]);
-
-  ctx.setLineDash([]);
+  // South America & Australia
+  drawCityCluster(-23.55, -46.633, 8, "#F59E0B"); // São Paulo
+  drawCityCluster(-34.603, -58.381, 7, "#F59E0B"); // Buenos Aires
+  drawCityCluster(-33.868, 151.209, 8, "#38BDF8"); // Sydney
+  drawCityCluster(-37.813, 144.963, 7, "#38BDF8"); // Melbourne
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
@@ -324,7 +229,7 @@ function createProceduralEarthTexture(): THREE.CanvasTexture {
 }
 
 // ---------------------------------------------------------------------------
-// 2. PROCEDURAL CLOUD COVER TEXTURE
+// 2. PROCEDURAL CLOUD COVER
 // ---------------------------------------------------------------------------
 function createProceduralCloudTexture(): THREE.CanvasTexture {
   const width = 1024;
@@ -337,7 +242,7 @@ function createProceduralCloudTexture(): THREE.CanvasTexture {
   if (ctx) {
     ctx.clearRect(0, 0, width, height);
 
-    for (let i = 0; i < 45; i++) {
+    for (let i = 0; i < 48; i++) {
       const cy = Math.random() * height;
       const cx = Math.random() * width;
       const rX = 70 + Math.random() * 130;
@@ -369,31 +274,14 @@ function buildCargoAirplane(): { group: THREE.Group; inner: THREE.Group; lights:
   const inner = new THREE.Group();
   group.add(inner);
 
-  const bodyMat = new THREE.MeshStandardMaterial({
-    color: 0xf8fafc,
-    roughness: 0.3,
-    metalness: 0.7,
-  });
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3, metalness: 0.7 });
+  const orangeLivery = new THREE.MeshStandardMaterial({ color: 0xff7a00, roughness: 0.2, metalness: 0.5, emissive: 0xff7a00, emissiveIntensity: 0.4 });
+  const cockpitMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.1, metalness: 0.9 });
 
-  const orangeLivery = new THREE.MeshStandardMaterial({
-    color: 0xff7a00,
-    roughness: 0.2,
-    metalness: 0.5,
-    emissive: 0xff7a00,
-    emissiveIntensity: 0.4,
-  });
-
-  const cockpitMat = new THREE.MeshStandardMaterial({
-    color: 0x0284c7,
-    roughness: 0.1,
-    metalness: 0.9,
-  });
-
-  // Fuselage (Length ~0.48)
+  // Fuselage
   const fuselageGeom = new THREE.CylinderGeometry(0.046, 0.05, 0.42, 16);
   fuselageGeom.rotateX(Math.PI / 2);
-  const fuselage = new THREE.Mesh(fuselageGeom, bodyMat);
-  inner.add(fuselage);
+  inner.add(new THREE.Mesh(fuselageGeom, bodyMat));
 
   // Nose Cone
   const noseGeom = new THREE.ConeGeometry(0.046, 0.12, 16);
@@ -402,26 +290,23 @@ function buildCargoAirplane(): { group: THREE.Group; inner: THREE.Group; lights:
   nose.position.z = 0.27;
   inner.add(nose);
 
-  // Cockpit Glass
-  const cockpitGeom = new THREE.BoxGeometry(0.055, 0.024, 0.09);
-  const cockpit = new THREE.Mesh(cockpitGeom, cockpitMat);
+  // Cockpit
+  const cockpit = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.024, 0.09), cockpitMat);
   cockpit.position.set(0, 0.034, 0.22);
   inner.add(cockpit);
 
-  // Swept Wings (Wingspan ~0.72)
-  const wingGeom = new THREE.BoxGeometry(0.72, 0.014, 0.15);
-  const wings = new THREE.Mesh(wingGeom, bodyMat);
+  // Wings & Winglets
+  const wings = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.014, 0.15), bodyMat);
   wings.position.set(0, 0, 0.04);
   inner.add(wings);
 
-  // Winglets (Angled tabs)
   const leftWinglet = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.045, 0.07), orangeLivery);
   leftWinglet.position.set(-0.36, 0.022, 0.04);
   const rightWinglet = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.045, 0.07), orangeLivery);
   rightWinglet.position.set(0.36, 0.022, 0.04);
   inner.add(leftWinglet, rightWinglet);
 
-  // Jet Engines (Mounted under wings with glowing exhausts)
+  // Jet Engines
   const engineGeom = new THREE.CylinderGeometry(0.026, 0.026, 0.12, 12);
   engineGeom.rotateX(Math.PI / 2);
 
@@ -430,7 +315,6 @@ function buildCargoAirplane(): { group: THREE.Group; inner: THREE.Group; lights:
   const rightEngine = new THREE.Mesh(engineGeom, bodyMat);
   rightEngine.position.set(0.18, -0.035, 0.03);
 
-  // Engine Exhaust Glow Core
   const exhaustMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
   const leftExhaust = new THREE.Mesh(new THREE.CircleGeometry(0.022, 12), exhaustMat);
   leftExhaust.position.set(-0.18, -0.035, -0.03);
@@ -439,20 +323,17 @@ function buildCargoAirplane(): { group: THREE.Group; inner: THREE.Group; lights:
 
   inner.add(leftEngine, rightEngine, leftExhaust, rightExhaust);
 
-  // Tail Vertical Stabilizer
-  const tailFinGeom = new THREE.BoxGeometry(0.014, 0.13, 0.12);
-  const tailFin = new THREE.Mesh(tailFinGeom, orangeLivery);
+  // Tail
+  const tailFin = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.13, 0.12), orangeLivery);
   tailFin.position.set(0, 0.075, -0.18);
   tailFin.rotation.x = -0.25;
 
-  // Horizontal Stabilizers
-  const tailHoriGeom = new THREE.BoxGeometry(0.26, 0.012, 0.09);
-  const tailHori = new THREE.Mesh(tailHoriGeom, bodyMat);
+  const tailHori = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.012, 0.09), bodyMat);
   tailHori.position.set(0, 0.02, -0.2);
 
   inner.add(tailFin, tailHori);
 
-  // Strobe Navigation Lights
+  // Strobes
   const redLightMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
   const greenLightMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
   const whiteLightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -481,14 +362,12 @@ function buildCargoShip(): { group: THREE.Group; inner: THREE.Group; radar: THRE
   const hullLowerMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.6, metalness: 0.2 });
   const deckMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
 
-  // Main hull body
   const upperHull = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.045, 0.58), hullUpperMat);
   upperHull.position.y = 0.022;
   const lowerHull = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.035, 0.54), hullLowerMat);
   lowerHull.position.y = -0.016;
   inner.add(upperHull, lowerHull);
 
-  // Pointed Bow
   const bowGeom = new THREE.ConeGeometry(0.09, 0.14, 4);
   bowGeom.rotateX(Math.PI / 2);
   bowGeom.rotateY(Math.PI / 4);
@@ -496,12 +375,11 @@ function buildCargoShip(): { group: THREE.Group; inner: THREE.Group; radar: THRE
   bow.position.set(0, 0.022, 0.35);
   inner.add(bow);
 
-  // Deck Surface
   const deck = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.012, 0.52), deckMat);
   deck.position.y = 0.046;
   inner.add(deck);
 
-  // Multi-colored ISO freight containers stacked in bays
+  // Containers
   const containerColors = [0xff7a00, 0x0d9488, 0xf59e0b, 0x1e40af, 0xff7a00, 0x10b981];
   const containerGeom = new THREE.BoxGeometry(0.055, 0.04, 0.12);
 
@@ -518,7 +396,6 @@ function buildCargoShip(): { group: THREE.Group; inner: THREE.Group; radar: THRE
       inner.add(c1);
       colorIdx++;
 
-      // Top tier container
       const mat2 = new THREE.MeshStandardMaterial({
         color: containerColors[(colorIdx + 2) % containerColors.length],
         roughness: 0.4,
@@ -531,28 +408,24 @@ function buildCargoShip(): { group: THREE.Group; inner: THREE.Group; radar: THRE
     }
   }
 
-  // Aft Superstructure (Bridge Tower)
+  // Superstructure
   const bridgeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4 });
   const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.1, 0.09), bridgeMat);
   bridge.position.set(0, 0.1, -0.2);
   inner.add(bridge);
 
-  // Bridge Windows
   const windowMat = new THREE.MeshBasicMaterial({ color: 0x0284c7 });
   const windows = new THREE.Mesh(new THREE.BoxGeometry(0.132, 0.02, 0.07), windowMat);
   windows.position.set(0, 0.128, -0.19);
   inner.add(windows);
 
-  // Smokestack Funnel
   const funnelMat = new THREE.MeshStandardMaterial({ color: 0xff7a00, roughness: 0.3 });
   const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.02, 0.055, 8), funnelMat);
   funnel.position.set(0, 0.165, -0.23);
   inner.add(funnel);
 
-  // Rotating Radar Scanner
-  const radarGeom = new THREE.BoxGeometry(0.055, 0.009, 0.012);
   const radarMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
-  const radar = new THREE.Mesh(radarGeom, radarMat);
+  const radar = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.009, 0.012), radarMat);
   radar.position.set(0, 0.19, -0.2);
   inner.add(radar);
 
@@ -572,23 +445,20 @@ function buildLogisticsLorry(): { group: THREE.Group; inner: THREE.Group; wheels
   const chassisMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7 });
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
 
-  // Chassis Frame
   const chassis = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.02, 0.45), chassisMat);
   chassis.position.y = 0.032;
   inner.add(chassis);
 
-  // Cabin (Front)
   const cab = new THREE.Mesh(new THREE.BoxGeometry(0.125, 0.088, 0.11), cabMat);
   cab.position.set(0, 0.08, 0.15);
   inner.add(cab);
 
-  // Windshield
   const windshieldMat = new THREE.MeshBasicMaterial({ color: 0x0284c7 });
   const windshield = new THREE.Mesh(new THREE.BoxGeometry(0.115, 0.038, 0.02), windshieldMat);
   windshield.position.set(0, 0.096, 0.205);
   inner.add(windshield);
 
-  // Glowing Headlights
+  // Headlights
   const headlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const leftHeadlight = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.016, 0.01), headlightMat);
   leftHeadlight.position.set(-0.045, 0.055, 0.208);
@@ -596,13 +466,13 @@ function buildLogisticsLorry(): { group: THREE.Group; inner: THREE.Group; wheels
   rightHeadlight.position.set(0.045, 0.055, 0.208);
   inner.add(leftHeadlight, rightHeadlight);
 
-  // Forward Light Cones (Illuminating the road ahead)
+  // Light Cones
   const coneGeom = new THREE.ConeGeometry(0.08, 0.28, 8);
   coneGeom.rotateX(Math.PI / 2);
   const coneMat = new THREE.MeshBasicMaterial({
     color: 0xfef08a,
     transparent: true,
-    opacity: 0.18,
+    opacity: 0.2,
     side: THREE.DoubleSide,
   });
   const leftBeam = new THREE.Mesh(coneGeom, coneMat);
@@ -611,18 +481,16 @@ function buildLogisticsLorry(): { group: THREE.Group; inner: THREE.Group; wheels
   rightBeam.position.set(0.045, 0.04, 0.35);
   inner.add(leftBeam, rightBeam);
 
-  // Cargo Box Trailer
+  // Trailer
   const trailer = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.105, 0.29), trailerMat);
   trailer.position.set(0, 0.092, -0.065);
   inner.add(trailer);
 
-  // Orange Accent Band on Trailer
-  const bandMat = new THREE.MeshStandardMaterial({ color: 0xff7a00, roughness: 0.3 });
-  const band = new THREE.Mesh(new THREE.BoxGeometry(0.132, 0.022, 0.292), bandMat);
+  const band = new THREE.Mesh(new THREE.BoxGeometry(0.132, 0.022, 0.292), new THREE.MeshStandardMaterial({ color: 0xff7a00, roughness: 0.3 }));
   band.position.set(0, 0.092, -0.065);
   inner.add(band);
 
-  // Wheels (6 wheels)
+  // Wheels
   const wheels: THREE.Mesh[] = [];
   const wheelGeom = new THREE.CylinderGeometry(0.026, 0.026, 0.022, 12);
   wheelGeom.rotateZ(Math.PI / 2);
@@ -647,9 +515,9 @@ function buildLogisticsLorry(): { group: THREE.Group; inner: THREE.Group; wheels
 }
 
 // ---------------------------------------------------------------------------
-// 6. CARGO PACKAGE BUILDER (Shiftable Cartons with Strapping Tape)
+// 6. CARGO PACKAGE BUILDER
 // ---------------------------------------------------------------------------
-function buildCargoPackage(size = 0.06): THREE.Group {
+function buildCargoPackage(size = 0.055): THREE.Group {
   const pkg = new THREE.Group();
   const boxMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6, metalness: 0.1 });
   const tapeMat = new THREE.MeshStandardMaterial({ color: 0xffedd5, roughness: 0.3 });
@@ -665,7 +533,47 @@ function buildCargoPackage(size = 0.06): THREE.Group {
 }
 
 // ---------------------------------------------------------------------------
-// MAIN COMPONENT (Pure 3D Animation Only - No UI Overlays)
+// 7. FREIGHT SHIFTING TERMINAL (Warehouse Dock with Conveyor & Shifting Boxes)
+// ---------------------------------------------------------------------------
+function buildCargoTransferHub(pos: THREE.Vector3): { group: THREE.Group; packages: { group: THREE.Group; progress: number; speed: number; offset: number }[] } {
+  const group = new THREE.Group();
+  group.position.copy(pos);
+  group.lookAt(pos.clone().multiplyScalar(2));
+
+  // Dock
+  const dockMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+  const dock = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, 0.04), dockMat);
+  group.add(dock);
+
+  // Conveyor beam
+  const conveyorMat = new THREE.MeshBasicMaterial({
+    color: 0xff7a00,
+    transparent: true,
+    opacity: 0.45,
+    side: THREE.DoubleSide,
+  });
+  const conveyor = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.035), conveyorMat);
+  conveyor.position.set(0, 0, 0.028);
+  group.add(conveyor);
+
+  // Shifting packages
+  const packages: { group: THREE.Group; progress: number; speed: number; offset: number }[] = [];
+  for (let i = 0; i < 4; i++) {
+    const p = buildCargoPackage(0.048);
+    group.add(p);
+    packages.push({
+      group: p,
+      progress: i * 0.25,
+      speed: 0.01 + Math.random() * 0.004,
+      offset: (i - 1.5) * 0.05,
+    });
+  }
+
+  return { group, packages };
+}
+
+// ---------------------------------------------------------------------------
+// MAIN COMPONENT - CONTINUOUS GLOBAL MULTI-MODAL LOGISTICS GRID
 // ---------------------------------------------------------------------------
 export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -677,7 +585,6 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // A. WebGL Renderer
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
@@ -700,52 +607,47 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     renderer.toneMappingExposure = 1.15;
     container.appendChild(renderer.domElement);
 
-    // B. Scene & Camera Setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    camera.position.set(0, 1.6, 6.4);
+    camera.position.set(0, 1.5, 6.6);
     camera.lookAt(0, 0, 0);
 
-    // C. Illumination System
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.15);
+    // Illumination
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.25);
     scene.add(ambientLight);
 
-    // Key Sunlight
-    const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.7);
+    const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.8);
     sunLight.position.set(8, 6, 7);
     scene.add(sunLight);
 
-    // Accent Rim Lights (Orange + Cyan)
-    const orangeRimLight = new THREE.PointLight(0xff7a00, 4.0, 15);
+    const orangeRimLight = new THREE.PointLight(0xff7a00, 4.2, 16);
     orangeRimLight.position.set(-6, -2, 4);
     scene.add(orangeRimLight);
 
-    const cyanRimLight = new THREE.PointLight(0x06b6d4, 3.4, 15);
+    const cyanRimLight = new THREE.PointLight(0x06b6d4, 3.8, 16);
     cyanRimLight.position.set(5, -4, -3);
     scene.add(cyanRimLight);
 
-    // D. Main Globe Pivot Group
+    // Main Pivot Group
     const globePivot = new THREE.Group();
     scene.add(globePivot);
 
-    // Orient initial globe face towards India & Arabian Sea
     globePivot.rotation.y = -Math.PI * 0.42;
     globePivot.rotation.x = 0.22;
 
     const globeRadius = 1.95;
 
-    // 1. Earth Sphere with Procedural World Map
+    // 1. Earth Sphere
     const earthTexture = createProceduralEarthTexture();
     const globeMat = new THREE.MeshStandardMaterial({
       map: earthTexture,
       roughness: 0.45,
       metalness: 0.25,
     });
-
     const globeMesh = new THREE.Mesh(new THREE.SphereGeometry(globeRadius, 64, 64), globeMat);
     globePivot.add(globeMesh);
 
-    // 2. Procedural Clouds Outer Sphere
+    // 2. Procedural Clouds
     const cloudTexture = createProceduralCloudTexture();
     const cloudMat = new THREE.MeshLambertMaterial({
       map: cloudTexture,
@@ -761,22 +663,37 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     const atmoMat = new THREE.MeshBasicMaterial({
       color: 0x0ea5e9,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.14,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
     });
-    const atmoMesh = new THREE.Mesh(new THREE.SphereGeometry(globeRadius * 1.12, 32, 32), atmoMat);
+    const atmoMesh = new THREE.Mesh(new THREE.SphereGeometry(globeRadius * 1.13, 32, 32), atmoMat);
     scene.add(atmoMesh);
 
     // -------------------------------------------------------------------------
-    // E. GLOBAL LOGISTICS HUBS & BEACONS
+    // A. GLOBAL TRADE HUBS & BEACONS ACROSS ALL CONTINENTS
     // -------------------------------------------------------------------------
     const hubs = [
-      { name: "Mumbai (Central)", lat: 19.076, lon: 72.877, color: 0xff7a00, primary: true },
-      { name: "Singapore", lat: 1.352, lon: 103.819, color: 0x06b6d4 },
+      // South Asia & Middle East
+      { name: "Mumbai", lat: 19.076, lon: 72.877, color: 0xff7a00, primary: true },
       { name: "Dubai", lat: 25.204, lon: 55.27, color: 0xf59e0b },
-      { name: "Frankfurt", lat: 50.11, lon: 8.682, color: 0x38bdf8 },
+      { name: "Delhi", lat: 28.613, lon: 77.209, color: 0xff7a00 },
+      // East & Southeast Asia
+      { name: "Singapore", lat: 1.352, lon: 103.819, color: 0x06b6d4 },
       { name: "Shanghai", lat: 31.23, lon: 121.473, color: 0x06b6d4 },
+      { name: "Tokyo", lat: 35.676, lon: 139.65, color: 0x38bdf8 },
+      // Europe
+      { name: "Frankfurt", lat: 50.11, lon: 8.682, color: 0x38bdf8 },
+      { name: "London", lat: 51.507, lon: -0.128, color: 0x38bdf8 },
+      { name: "Rotterdam", lat: 51.924, lon: 4.478, color: 0x06b6d4 },
+      // Americas
+      { name: "New York", lat: 40.712, lon: -74.006, color: 0x38bdf8 },
+      { name: "Los Angeles", lat: 34.052, lon: -118.244, color: 0x38bdf8 },
+      { name: "São Paulo", lat: -23.55, lon: -46.633, color: 0xf59e0b },
+      // Africa & Oceania
+      { name: "Cairo", lat: 30.044, lon: 31.236, color: 0xf59e0b },
+      { name: "Johannesburg", lat: -26.204, lon: 28.047, color: 0xf59e0b },
+      { name: "Sydney", lat: -33.868, lon: 151.209, color: 0x06b6d4 },
     ];
 
     const hubBeacons: { ring: THREE.Mesh; scale: number; speed: number }[] = [];
@@ -787,34 +704,26 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
       hubGroup.position.copy(pos);
       hubGroup.lookAt(pos.clone().multiplyScalar(2));
 
-      // Central core node
-      const coreGeom = new THREE.SphereGeometry(hub.primary ? 0.055 : 0.038, 16, 16);
-      const coreMat = new THREE.MeshBasicMaterial({ color: hub.color });
-      const core = new THREE.Mesh(coreGeom, coreMat);
+      // Core sphere
+      const core = new THREE.Mesh(
+        new THREE.SphereGeometry(hub.primary ? 0.055 : 0.038, 16, 16),
+        new THREE.MeshBasicMaterial({ color: hub.color })
+      );
       hubGroup.add(core);
 
-      // Pulsing Base Ring
-      const ringGeom = new THREE.RingGeometry(0.04, 0.085, 24);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: hub.color,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.8,
-      });
-      const ring = new THREE.Mesh(ringGeom, ringMat);
+      // Pulsing ring
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.04, 0.085, 24),
+        new THREE.MeshBasicMaterial({ color: hub.color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 })
+      );
       hubGroup.add(ring);
       hubBeacons.push({ ring, scale: 1, speed: 0.015 + Math.random() * 0.01 });
 
-      // Vertical Beacon Light Beam
-      const beamHeight = hub.primary ? 0.48 : 0.3;
+      // Vertical beacon beam
+      const beamHeight = hub.primary ? 0.48 : 0.28;
       const beamGeom = new THREE.CylinderGeometry(0.007, 0.015, beamHeight, 8);
       beamGeom.rotateX(Math.PI / 2);
-      const beamMat = new THREE.MeshBasicMaterial({
-        color: hub.color,
-        transparent: true,
-        opacity: 0.55,
-      });
-      const beam = new THREE.Mesh(beamGeom, beamMat);
+      const beam = new THREE.Mesh(beamGeom, new THREE.MeshBasicMaterial({ color: hub.color, transparent: true, opacity: 0.5 }));
       beam.position.z = beamHeight / 2;
       hubGroup.add(beam);
 
@@ -822,72 +731,155 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     });
 
     // -------------------------------------------------------------------------
-    // F. FLIGHT (AIR CARGO) ROUTE & DYNAMIC AIRPLANE ANIMATION
+    // B. FLIGHT FLEET ACROSS ALL CONTINENTS (NO EMPTY SPACES)
     // -------------------------------------------------------------------------
     const flightAltitude = globeRadius * 1.25;
-    const flightPoints = [
+
+    // 1. Eurasian & Middle East Loop
+    const flightPointsA = [
       latLonToVector3(19.076, 72.877, flightAltitude), // Mumbai
       latLonToVector3(25.204, 55.27, flightAltitude * 1.02), // Dubai
       latLonToVector3(50.11, 8.682, flightAltitude * 1.03), // Frankfurt
-      latLonToVector3(31.23, 121.473, flightAltitude * 1.02), // Shanghai
-      latLonToVector3(1.352, 103.819, flightAltitude), // Singapore
+      latLonToVector3(51.507, -0.128, flightAltitude * 1.02), // London
+      latLonToVector3(30.044, 31.236, flightAltitude), // Cairo
+      latLonToVector3(19.076, 72.877, flightAltitude), // Back to Mumbai
     ];
+    const flightCurveA = new THREE.CatmullRomCurve3(flightPointsA, true);
 
-    const flightCurve = new THREE.CatmullRomCurve3(flightPoints, true);
+    // 2. Trans-Pacific & East Asia Loop
+    const flightPointsB = [
+      latLonToVector3(31.23, 121.473, flightAltitude * 1.02), // Shanghai
+      latLonToVector3(35.676, 139.65, flightAltitude * 1.03), // Tokyo
+      latLonToVector3(34.052, -118.244, flightAltitude * 1.04), // Los Angeles
+      latLonToVector3(21.307, -157.858, flightAltitude * 1.02), // Hawaii
+      latLonToVector3(-33.868, 151.209, flightAltitude * 1.02), // Sydney
+      latLonToVector3(1.352, 103.819, flightAltitude), // Singapore
+      latLonToVector3(31.23, 121.473, flightAltitude * 1.02), // Back to Shanghai
+    ];
+    const flightCurveB = new THREE.CatmullRomCurve3(flightPointsB, true);
 
-    // Glowing Neon Flight Arc Line
-    const flightArcPoints = flightCurve.getPoints(120);
-    const flightArcGeom = new THREE.BufferGeometry().setFromPoints(flightArcPoints);
+    // 3. Trans-Atlantic & Pan-American Loop
+    const flightPointsC = [
+      latLonToVector3(51.507, -0.128, flightAltitude * 1.02), // London
+      latLonToVector3(40.712, -74.006, flightAltitude * 1.03), // New York
+      latLonToVector3(34.052, -118.244, flightAltitude * 1.04), // Los Angeles
+      latLonToVector3(8.982, -79.519, flightAltitude * 1.02), // Panama
+      latLonToVector3(-23.55, -46.633, flightAltitude * 1.03), // São Paulo
+      latLonToVector3(14.716, -17.467, flightAltitude * 1.02), // West Africa
+      latLonToVector3(50.11, 8.682, flightAltitude * 1.02), // Frankfurt
+      latLonToVector3(51.507, -0.128, flightAltitude * 1.02), // London
+    ];
+    const flightCurveC = new THREE.CatmullRomCurve3(flightPointsC, true);
+
+    // Glowing Neon Flight Arc Lines
     const flightArcMat = new THREE.LineBasicMaterial({
       color: 0x38bdf8,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.5,
       linewidth: 2,
     });
-    const flightLine = new THREE.Line(flightArcGeom, flightArcMat);
-    globePivot.add(flightLine);
 
-    // Build Cargo Airplane Model
-    const { group: planeGroup, inner: planeInner, lights: planeLights } = buildCargoAirplane();
-    globePivot.add(planeGroup);
-
-    // Dynamic Jet Contrail Particle Stream
-    const contrailCount = 35;
-    const contrailGeom = new THREE.SphereGeometry(0.018, 6, 6);
-    const contrailMat = new THREE.MeshBasicMaterial({
-      color: 0xbae6fd,
-      transparent: true,
-      opacity: 0.7,
+    [flightCurveA, flightCurveB, flightCurveC].forEach((curve) => {
+      const geom = new THREE.BufferGeometry().setFromPoints(curve.getPoints(100));
+      const line = new THREE.Line(geom, flightArcMat);
+      globePivot.add(line);
     });
-    const contrails: { mesh: THREE.Mesh; t: number; life: number }[] = [];
 
-    for (let i = 0; i < contrailCount; i++) {
-      const mesh = new THREE.Mesh(contrailGeom, contrailMat.clone());
-      globePivot.add(mesh);
-      contrails.push({ mesh, t: 0, life: i / contrailCount });
+    // Planes Fleet: 6 planes moving continuously with staggered offsets
+    interface PlaneEntity {
+      group: THREE.Group;
+      inner: THREE.Group;
+      lights: THREE.Mesh[];
+      curve: THREE.CatmullRomCurve3;
+      offset: number;
+      speed: number;
     }
 
-    // -------------------------------------------------------------------------
-    // G. MARITIME CARGO CONTAINER SHIP ROUTE & VESSEL ANIMATION
-    // -------------------------------------------------------------------------
-    const shipAltitude = globeRadius * 1.005;
-    const shipPoints = [
-      latLonToVector3(18.5, 72.6, shipAltitude), // Mumbai Port
-      latLonToVector3(22.0, 62.0, shipAltitude), // Arabian Sea
-      latLonToVector3(24.5, 57.5, shipAltitude), // Gulf of Oman
-      latLonToVector3(12.0, 50.0, shipAltitude), // Gulf of Aden
-      latLonToVector3(5.5, 80.5, shipAltitude), // South Sri Lanka maritime corridor
-      latLonToVector3(1.2, 103.8, shipAltitude), // Strait of Malacca / Singapore
-      latLonToVector3(10.0, 110.0, shipAltitude), // South China Sea
-      latLonToVector3(20.0, 118.0, shipAltitude), // Taiwan Strait
-      latLonToVector3(12.0, 90.0, shipAltitude), // Bay of Bengal return
+    const planeFleet: PlaneEntity[] = [];
+
+    const planeConfigurations = [
+      { curve: flightCurveA, offset: 0.0, speed: 0.038 },
+      { curve: flightCurveA, offset: 0.5, speed: 0.038 },
+      { curve: flightCurveB, offset: 0.15, speed: 0.034 },
+      { curve: flightCurveB, offset: 0.65, speed: 0.034 },
+      { curve: flightCurveC, offset: 0.3, speed: 0.036 },
+      { curve: flightCurveC, offset: 0.8, speed: 0.036 },
     ];
 
-    const shipCurve = new THREE.CatmullRomCurve3(shipPoints, true);
+    // Contrail particles
+    const contrailGeom = new THREE.SphereGeometry(0.016, 6, 6);
+    const contrailMat = new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.7 });
+    const contrailPool: { mesh: THREE.Mesh; planeIdx: number; life: number }[] = [];
 
-    // Maritime Route Spline Line
-    const shipArcPoints = shipCurve.getPoints(100);
-    const shipArcGeom = new THREE.BufferGeometry().setFromPoints(shipArcPoints);
+    planeConfigurations.forEach((cfg, idx) => {
+      const { group: pGroup, inner: pInner, lights: pLights } = buildCargoAirplane();
+      globePivot.add(pGroup);
+      planeFleet.push({
+        group: pGroup,
+        inner: pInner,
+        lights: pLights,
+        curve: cfg.curve,
+        offset: cfg.offset,
+        speed: cfg.speed,
+      });
+
+      // 8 contrails per plane
+      for (let i = 0; i < 8; i++) {
+        const cMesh = new THREE.Mesh(contrailGeom, contrailMat.clone());
+        globePivot.add(cMesh);
+        contrailPool.push({ mesh: cMesh, planeIdx: idx, life: i / 8 });
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // C. MARITIME SHIPPING FLEET ACROSS ALL OCEANS (NO EMPTY SPACES)
+    // -------------------------------------------------------------------------
+    const seaRadius = globeRadius * 1.005;
+
+    // 1. Indian Ocean & Middle East Shipping Lane
+    const shipPointsA = [
+      latLonToVector3(18.5, 72.6, seaRadius), // Mumbai Port
+      latLonToVector3(22.0, 62.0, seaRadius), // Arabian Sea
+      latLonToVector3(24.5, 57.5, seaRadius), // Gulf of Oman
+      latLonToVector3(12.0, 50.0, seaRadius), // Gulf of Aden
+      latLonToVector3(5.5, 80.5, seaRadius), // South Sri Lanka
+      latLonToVector3(1.2, 103.8, seaRadius), // Singapore
+      latLonToVector3(12.0, 90.0, seaRadius), // Bay of Bengal
+      latLonToVector3(18.5, 72.6, seaRadius), // Mumbai Port
+    ];
+    const shipCurveA = new THREE.CatmullRomCurve3(shipPointsA, true);
+
+    // 2. Atlantic Ocean Shipping Lane
+    const shipPointsB = [
+      latLonToVector3(51.924, 4.478, seaRadius), // Rotterdam
+      latLonToVector3(48.0, -6.0, seaRadius), // English Channel exit
+      latLonToVector3(42.0, -40.0, seaRadius), // Mid North Atlantic
+      latLonToVector3(40.5, -73.8, seaRadius), // New York Port
+      latLonToVector3(25.0, -75.0, seaRadius), // Caribbean
+      latLonToVector3(9.5, -79.8, seaRadius), // Panama Canal entrance
+      latLonToVector3(35.0, -15.0, seaRadius), // Approach to Gibraltar
+      latLonToVector3(36.0, -5.0, seaRadius), // Strait of Gibraltar
+      latLonToVector3(44.0, -8.0, seaRadius), // Bay of Biscay
+      latLonToVector3(51.924, 4.478, seaRadius), // Rotterdam
+    ];
+    const shipCurveB = new THREE.CatmullRomCurve3(shipPointsB, true);
+
+    // 3. Pacific Ocean Shipping Lane
+    const shipPointsC = [
+      latLonToVector3(31.0, 122.0, seaRadius), // Shanghai Port
+      latLonToVector3(34.0, 140.0, seaRadius), // Tokyo Bay approach
+      latLonToVector3(40.0, 175.0, seaRadius), // North Pacific
+      latLonToVector3(33.7, -118.2, seaRadius), // Los Angeles Port
+      latLonToVector3(10.0, -140.0, seaRadius), // Central Pacific
+      latLonToVector3(-33.8, 151.3, seaRadius), // Sydney Harbor approach
+      latLonToVector3(-5.0, 130.0, seaRadius), // Indonesian archipelago
+      latLonToVector3(1.2, 103.8, seaRadius), // Singapore
+      latLonToVector3(14.0, 114.0, seaRadius), // South China Sea
+      latLonToVector3(31.0, 122.0, seaRadius), // Shanghai Port
+    ];
+    const shipCurveC = new THREE.CatmullRomCurve3(shipPointsC, true);
+
+    // Nautical dashed lines
     const shipArcMat = new THREE.LineDashedMaterial({
       color: 0x06b6d4,
       dashSize: 0.08,
@@ -895,105 +887,181 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
       transparent: true,
       opacity: 0.45,
     });
-    const shipLine = new THREE.Line(shipArcGeom, shipArcMat);
-    shipLine.computeLineDistances();
-    globePivot.add(shipLine);
 
-    // Build Cargo Container Ship Model
-    const { group: shipGroup, inner: shipInner, radar: shipRadar } = buildCargoShip();
-    globePivot.add(shipGroup);
-
-    // Foamy Water Wake Behind Stern
-    const wakeCount = 18;
-    const wakeGeom = new THREE.RingGeometry(0.02, 0.065, 12);
-    const wakeMat = new THREE.MeshBasicMaterial({
-      color: 0xe0f2fe,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.5,
+    [shipCurveA, shipCurveB, shipCurveC].forEach((curve) => {
+      const geom = new THREE.BufferGeometry().setFromPoints(curve.getPoints(90));
+      const line = new THREE.Line(geom, shipArcMat);
+      line.computeLineDistances();
+      globePivot.add(line);
     });
-    const wakes: { mesh: THREE.Mesh; scale: number; opacity: number }[] = [];
 
-    for (let i = 0; i < wakeCount; i++) {
-      const mesh = new THREE.Mesh(wakeGeom, wakeMat.clone());
-      globePivot.add(mesh);
-      wakes.push({ mesh, scale: 1, opacity: 0.6 });
+    // Ship Fleet: 6 vessels distributed across the oceans
+    interface ShipEntity {
+      group: THREE.Group;
+      inner: THREE.Group;
+      radar: THREE.Mesh;
+      curve: THREE.CatmullRomCurve3;
+      offset: number;
+      speed: number;
     }
 
-    // -------------------------------------------------------------------------
-    // H. OVERLAND HIGHWAY CORRIDOR, LORRY & FREIGHT SHIFTING ANIMATION
-    // -------------------------------------------------------------------------
-    const roadAltitude = globeRadius * 1.008;
-    const roadPoints = [
-      latLonToVector3(19.076, 72.877, roadAltitude), // Mumbai Logistics Hub
-      latLonToVector3(23.022, 72.571, roadAltitude), // Ahmedabad / Gujarat Hub
-      latLonToVector3(28.613, 77.209, roadAltitude), // Delhi NCR Depot
-      latLonToVector3(26.449, 80.331, roadAltitude), // Kanpur Central
-      latLonToVector3(22.572, 88.363, roadAltitude), // Kolkata Port
-      latLonToVector3(17.385, 78.486, roadAltitude), // Hyderabad Hub
-      latLonToVector3(12.971, 77.594, roadAltitude), // Bengaluru Terminal
-      latLonToVector3(13.082, 80.27, roadAltitude), // Chennai Terminal
+    const shipFleet: ShipEntity[] = [];
+
+    const shipConfigurations = [
+      { curve: shipCurveA, offset: 0.0, speed: 0.016 },
+      { curve: shipCurveA, offset: 0.5, speed: 0.016 },
+      { curve: shipCurveB, offset: 0.2, speed: 0.015 },
+      { curve: shipCurveB, offset: 0.7, speed: 0.015 },
+      { curve: shipCurveC, offset: 0.1, speed: 0.014 },
+      { curve: shipCurveC, offset: 0.6, speed: 0.014 },
     ];
 
-    const roadCurve = new THREE.CatmullRomCurve3(roadPoints, true);
+    // Wake ripples
+    const wakeGeom = new THREE.RingGeometry(0.02, 0.065, 12);
+    const wakeMat = new THREE.MeshBasicMaterial({ color: 0xe0f2fe, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+    const wakePool: { mesh: THREE.Mesh; shipIdx: number; scale: number; opacity: number }[] = [];
 
-    // Overland Highway Illuminated Corridor
-    const roadArcPoints = roadCurve.getPoints(80);
-    const roadArcGeom = new THREE.BufferGeometry().setFromPoints(roadArcPoints);
+    shipConfigurations.forEach((cfg, idx) => {
+      const { group: sGroup, inner: sInner, radar: sRadar } = buildCargoShip();
+      globePivot.add(sGroup);
+      shipFleet.push({
+        group: sGroup,
+        inner: sInner,
+        radar: sRadar,
+        curve: cfg.curve,
+        offset: cfg.offset,
+        speed: cfg.speed,
+      });
+
+      for (let i = 0; i < 4; i++) {
+        const wMesh = new THREE.Mesh(wakeGeom, wakeMat.clone());
+        globePivot.add(wMesh);
+        wakePool.push({ mesh: wMesh, shipIdx: idx, scale: 1, opacity: 0.6 });
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // D. OVERLAND HIGHWAYS & LORRIES FLEET ACROSS CONTINENTS (SHIFTING GOODS)
+    // -------------------------------------------------------------------------
+    const roadAltitude = globeRadius * 1.008;
+
+    // 1. South Asia Industrial Corridor
+    const roadCurveIndia = new THREE.CatmullRomCurve3([
+      latLonToVector3(19.076, 72.877, roadAltitude), // Mumbai
+      latLonToVector3(23.022, 72.571, roadAltitude), // Gujarat
+      latLonToVector3(28.613, 77.209, roadAltitude), // Delhi NCR
+      latLonToVector3(26.449, 80.331, roadAltitude), // Kanpur
+      latLonToVector3(22.572, 88.363, roadAltitude), // Kolkata
+      latLonToVector3(17.385, 78.486, roadAltitude), // Hyderabad
+      latLonToVector3(12.971, 77.594, roadAltitude), // Bengaluru
+      latLonToVector3(13.082, 80.27, roadAltitude), // Chennai
+      latLonToVector3(19.076, 72.877, roadAltitude), // Mumbai
+    ], true);
+
+    // 2. North America Interstate Corridor
+    const roadCurveUSA = new THREE.CatmullRomCurve3([
+      latLonToVector3(40.712, -74.006, roadAltitude), // New York
+      latLonToVector3(41.878, -87.629, roadAltitude), // Chicago
+      latLonToVector3(39.739, -104.99, roadAltitude), // Denver
+      latLonToVector3(34.052, -118.244, roadAltitude), // Los Angeles
+      latLonToVector3(32.776, -96.797, roadAltitude), // Dallas
+      latLonToVector3(29.76, -95.369, roadAltitude), // Houston
+      latLonToVector3(33.749, -84.388, roadAltitude), // Atlanta
+      latLonToVector3(40.712, -74.006, roadAltitude), // New York
+    ], true);
+
+    // 3. European Intermodal Artery
+    const roadCurveEurope = new THREE.CatmullRomCurve3([
+      latLonToVector3(51.924, 4.478, roadAltitude), // Rotterdam
+      latLonToVector3(50.11, 8.682, roadAltitude), // Frankfurt
+      latLonToVector3(48.135, 11.582, roadAltitude), // Munich
+      latLonToVector3(45.464, 9.19, roadAltitude), // Milan
+      latLonToVector3(48.856, 2.352, roadAltitude), // Paris
+      latLonToVector3(51.219, 4.402, roadAltitude), // Antwerp
+      latLonToVector3(51.924, 4.478, roadAltitude), // Rotterdam
+    ], true);
+
+    // 4. East Asian Manufacturing Belt
+    const roadCurveChina = new THREE.CatmullRomCurve3([
+      latLonToVector3(31.23, 121.473, roadAltitude), // Shanghai
+      latLonToVector3(39.904, 116.407, roadAltitude), // Beijing
+      latLonToVector3(30.592, 114.305, roadAltitude), // Wuhan
+      latLonToVector3(22.543, 114.057, roadAltitude), // Shenzhen
+      latLonToVector3(23.129, 113.264, roadAltitude), // Guangzhou
+      latLonToVector3(30.274, 120.155, roadAltitude), // Hangzhou
+      latLonToVector3(31.23, 121.473, roadAltitude), // Shanghai
+    ], true);
+
+    // Illuminated overland roads
     const roadArcMat = new THREE.LineBasicMaterial({
       color: 0xffa336,
       transparent: true,
       opacity: 0.75,
       linewidth: 2,
     });
-    const roadLine = new THREE.Line(roadArcGeom, roadArcMat);
-    globePivot.add(roadLine);
 
-    // Build Logistics Lorry (Truck) Model
-    const { group: lorryGroup, inner: lorryInner, wheels: lorryWheels } = buildLogisticsLorry();
-    globePivot.add(lorryGroup);
+    [roadCurveIndia, roadCurveUSA, roadCurveEurope, roadCurveChina].forEach((curve) => {
+      const geom = new THREE.BufferGeometry().setFromPoints(curve.getPoints(70));
+      const line = new THREE.Line(geom, roadArcMat);
+      globePivot.add(line);
+    });
 
-    // -------------------------------------------------------------------------
-    // I. ACTIVE FREIGHT SHIFTING MECHANISM (Packages transferring at Hub)
-    // -------------------------------------------------------------------------
-    // At the Mumbai Central Logistics Hub, cargo packages actively shift between depot & lorry
-    const mumbaiHubPos = latLonToVector3(19.076, 72.877, roadAltitude);
-    const shiftGroup = new THREE.Group();
-    shiftGroup.position.copy(mumbaiHubPos);
-    shiftGroup.lookAt(mumbaiHubPos.clone().multiplyScalar(2));
-    globePivot.add(shiftGroup);
-
-    // Warehouse Loading Dock Platform
-    const dockMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
-    const dock = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, 0.04), dockMat);
-    shiftGroup.add(dock);
-
-    // Multiple Shifting Cartons
-    const shiftingPackages: { group: THREE.Group; progress: number; speed: number; offset: number }[] = [];
-    for (let i = 0; i < 4; i++) {
-      const p = buildCargoPackage(0.052);
-      shiftGroup.add(p);
-      shiftingPackages.push({
-        group: p,
-        progress: i * 0.25,
-        speed: 0.009,
-        offset: (i - 1.5) * 0.055,
-      });
+    // Lorry Fleet: multiple trucks driving on each major continental highway
+    interface LorryEntity {
+      group: THREE.Group;
+      inner: THREE.Group;
+      wheels: THREE.Mesh[];
+      curve: THREE.CatmullRomCurve3;
+      offset: number;
+      speed: number;
     }
 
-    // Glowing Holographic Cargo Conveyor Beam
-    const conveyorMat = new THREE.MeshBasicMaterial({
-      color: 0xff7a00,
-      transparent: true,
-      opacity: 0.45,
-      side: THREE.DoubleSide,
+    const lorryFleet: LorryEntity[] = [];
+
+    const lorryConfigurations = [
+      { curve: roadCurveIndia, offset: 0.0, speed: 0.024 },
+      { curve: roadCurveIndia, offset: 0.5, speed: 0.024 },
+      { curve: roadCurveUSA, offset: 0.1, speed: 0.022 },
+      { curve: roadCurveUSA, offset: 0.6, speed: 0.022 },
+      { curve: roadCurveEurope, offset: 0.25, speed: 0.025 },
+      { curve: roadCurveEurope, offset: 0.75, speed: 0.025 },
+      { curve: roadCurveChina, offset: 0.35, speed: 0.023 },
+    ];
+
+    lorryConfigurations.forEach((cfg) => {
+      const { group: lGroup, inner: lInner, wheels: lWheels } = buildLogisticsLorry();
+      globePivot.add(lGroup);
+      lorryFleet.push({
+        group: lGroup,
+        inner: lInner,
+        wheels: lWheels,
+        curve: cfg.curve,
+        offset: cfg.offset,
+        speed: cfg.speed,
+      });
     });
-    const conveyor = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.035), conveyorMat);
-    conveyor.position.set(0, 0, 0.028);
-    shiftGroup.add(conveyor);
 
     // -------------------------------------------------------------------------
-    // J. SMOOTH INTERACTIVE ROTATION & CINEMATIC AUTO-DRIFT
+    // E. ACTIVE FREIGHT SHIFTING HUBS (Goods Shifting at Key Terminals)
+    // -------------------------------------------------------------------------
+    // Continuous dynamic cargo package shifting across 4 global hub locations
+    const shiftHubs = [
+      latLonToVector3(19.076, 72.877, roadAltitude), // Mumbai Terminal
+      latLonToVector3(50.11, 8.682, roadAltitude), // Frankfurt Terminal
+      latLonToVector3(41.878, -87.629, roadAltitude), // Chicago Terminal
+      latLonToVector3(31.23, 121.473, roadAltitude), // Shanghai Terminal
+    ];
+
+    const allShiftingPackages: { group: THREE.Group; progress: number; speed: number; offset: number }[] = [];
+
+    shiftHubs.forEach((hubPos) => {
+      const { group: hubGroup, packages } = buildCargoTransferHub(hubPos);
+      globePivot.add(hubGroup);
+      packages.forEach((pkg) => allShiftingPackages.push(pkg));
+    });
+
+    // -------------------------------------------------------------------------
+    // F. SMOOTH INTERACTIVE ROTATION & CINEMATIC AUTO-DRIFT
     // -------------------------------------------------------------------------
     let isDragging = false;
     let prevMouseX = 0;
@@ -1020,7 +1088,6 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
 
       targetRotY += deltaX * 0.007;
       targetRotX += deltaY * 0.007;
-
       targetRotX = Math.max(-Math.PI * 0.4, Math.min(Math.PI * 0.4, targetRotX));
     };
 
@@ -1037,14 +1104,12 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     domEl.addEventListener("touchmove", onPointerMove, { passive: true });
     window.addEventListener("touchend", onPointerUp);
 
-    // Viewport Intersection Observer
     let isVisible = true;
     const observer = new IntersectionObserver(([entry]) => {
       isVisible = entry.isIntersecting;
     });
     observer.observe(container);
 
-    // Responsive Resize Handler
     const handleResize = () => {
       if (!container) return;
       const w = container.clientWidth || 540;
@@ -1056,14 +1121,12 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     window.addEventListener("resize", handleResize);
 
     // -------------------------------------------------------------------------
-    // K. 60FPS MASTER ANIMATION LOOP
+    // G. 60FPS MASTER ANIMATION LOOP
     // -------------------------------------------------------------------------
     let animationFrameId: number;
     let clock = new THREE.Clock();
 
-    let planeT = 0;
-    let shipT = 0.15;
-    let lorryT = 0.4;
+    let globalT = 0;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
@@ -1073,7 +1136,7 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
       const delta = clock.getDelta();
       const elapsed = clock.getElapsedTime();
 
-      // Continuous, elegant auto-rotation
+      // Continuous auto-rotation
       if (!isDragging && !prefersReducedMotion) {
         targetRotY += 0.0022;
       }
@@ -1081,94 +1144,109 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
       globePivot.rotation.y += (targetRotY - globePivot.rotation.y) * 0.08;
       globePivot.rotation.x += (targetRotX - globePivot.rotation.x) * 0.08;
 
-      // Cloud Sphere Counter-Drift
       cloudMesh.rotation.y += 0.0006;
 
-      // 1. Animate Air Cargo Plane
-      planeT = (planeT + delta * 0.038) % 1;
-      const planePos = flightCurve.getPoint(planeT);
-      const planeNext = flightCurve.getPoint((planeT + 0.01) % 1);
-      const planeDir = planeNext.clone().sub(planePos).normalize();
-      const planeUp = planePos.clone().normalize();
+      globalT += delta;
 
-      planeGroup.position.copy(planePos);
-      planeGroup.up.copy(planeUp);
-      planeGroup.lookAt(planePos.clone().add(planeDir));
-
-      // Natural Bank/Roll into Turns
-      const bank = Math.sin(planeT * Math.PI * 4) * 0.28;
-      planeInner.rotation.z = bank;
-
-      // Blinking Navigation Strobes
+      // 1. Animate Entire Air Fleet Across All Continents
       const strobeOn = Math.sin(elapsed * 12) > 0.5;
-      planeLights.forEach((l) => (l.visible = strobeOn));
 
-      // Contrail Particle Evolution
-      contrails.forEach((c) => {
-        c.life += delta * 1.5;
-        if (c.life > 1) {
-          c.life = 0;
-          c.mesh.position.copy(planePos.clone().add(planeDir.clone().multiplyScalar(-0.08)));
-        }
-        const s = 0.6 + c.life * 1.2;
-        c.mesh.scale.set(s, s, s);
-        (c.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.7 - c.life * 0.7);
+      planeFleet.forEach((p, idx) => {
+        const t = (p.offset + globalT * p.speed) % 1;
+        const pos = p.curve.getPoint(t);
+        const nextPos = p.curve.getPoint((t + 0.01) % 1);
+        const dir = nextPos.clone().sub(pos).normalize();
+        const up = pos.clone().normalize();
+
+        p.group.position.copy(pos);
+        p.group.up.copy(up);
+        p.group.lookAt(pos.clone().add(dir));
+
+        // Banking
+        const bank = Math.sin((t + idx * 0.2) * Math.PI * 4) * 0.28;
+        p.inner.rotation.z = bank;
+
+        p.lights.forEach((l) => (l.visible = strobeOn));
       });
 
-      // 2. Animate Maritime Cargo Ship
-      shipT = (shipT + delta * 0.016) % 1;
-      const shipPos = shipCurve.getPoint(shipT);
-      const shipNext = shipCurve.getPoint((shipT + 0.01) % 1);
-      const shipDir = shipNext.clone().sub(shipPos).normalize();
-      const shipUp = shipPos.clone().normalize();
+      // Update contrails for each plane
+      contrailPool.forEach((c) => {
+        c.life += delta * 1.5;
+        const p = planeFleet[c.planeIdx];
+        if (p) {
+          if (c.life > 1) {
+            c.life = 0;
+            const t = (p.offset + globalT * p.speed) % 1;
+            const pos = p.curve.getPoint(t);
+            const nextPos = p.curve.getPoint((t + 0.01) % 1);
+            const dir = nextPos.clone().sub(pos).normalize();
+            c.mesh.position.copy(pos.clone().add(dir.clone().multiplyScalar(-0.08)));
+          }
+          const s = 0.6 + c.life * 1.2;
+          c.mesh.scale.set(s, s, s);
+          (c.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.7 - c.life * 0.7);
+        }
+      });
 
-      shipGroup.position.copy(shipPos);
-      shipGroup.up.copy(shipUp);
-      shipGroup.lookAt(shipPos.clone().add(shipDir));
+      // 2. Animate Entire Maritime Fleet Across All Oceans
+      shipFleet.forEach((s) => {
+        const t = (s.offset + globalT * s.speed) % 1;
+        const pos = s.curve.getPoint(t);
+        const nextPos = s.curve.getPoint((t + 0.01) % 1);
+        const dir = nextPos.clone().sub(pos).normalize();
+        const up = pos.clone().normalize();
 
-      // Swell Bobbing (Pitch & Roll)
-      shipInner.rotation.x = Math.sin(elapsed * 2.2) * 0.035;
-      shipInner.rotation.z = Math.cos(elapsed * 1.8) * 0.045;
+        s.group.position.copy(pos);
+        s.group.up.copy(up);
+        s.group.lookAt(pos.clone().add(dir));
 
-      // Rotating Radar Scanner
-      shipRadar.rotation.y += 0.06;
+        s.inner.rotation.x = Math.sin(elapsed * 2.2 + s.offset * 10) * 0.035;
+        s.inner.rotation.z = Math.cos(elapsed * 1.8 + s.offset * 10) * 0.045;
+        s.radar.rotation.y += 0.06;
+      });
 
-      // Foamy Stern Wake
-      wakes.forEach((w, idx) => {
+      // Update wake ripples for each ship
+      wakePool.forEach((w) => {
         w.scale += delta * 1.2;
         w.opacity -= delta * 0.6;
-        if (w.opacity <= 0) {
-          w.scale = 1;
-          w.opacity = 0.6;
-          w.mesh.position.copy(shipPos.clone().add(shipDir.clone().multiplyScalar(-0.06 - idx * 0.01)));
-          w.mesh.quaternion.copy(shipGroup.quaternion);
+        const s = shipFleet[w.shipIdx];
+        if (s) {
+          if (w.opacity <= 0) {
+            w.scale = 1;
+            w.opacity = 0.6;
+            const t = (s.offset + globalT * s.speed) % 1;
+            const pos = s.curve.getPoint(t);
+            const nextPos = s.curve.getPoint((t + 0.01) % 1);
+            const dir = nextPos.clone().sub(pos).normalize();
+            w.mesh.position.copy(pos.clone().add(dir.clone().multiplyScalar(-0.06)));
+            w.mesh.quaternion.copy(s.group.quaternion);
+          }
+          w.mesh.scale.set(w.scale, w.scale, w.scale);
+          (w.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, w.opacity);
         }
-        w.mesh.scale.set(w.scale, w.scale, w.scale);
-        (w.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, w.opacity);
       });
 
-      // 3. Animate Logistics Lorry
-      lorryT = (lorryT + delta * 0.024) % 1;
-      const lorryPos = roadCurve.getPoint(lorryT);
-      const lorryNext = roadCurve.getPoint((lorryT + 0.01) % 1);
-      const lorryDir = lorryNext.clone().sub(lorryPos).normalize();
-      const lorryUp = lorryPos.clone().normalize();
+      // 3. Animate Entire Overland Logistics Fleet Across All Continents
+      lorryFleet.forEach((l) => {
+        const t = (l.offset + globalT * l.speed) % 1;
+        const pos = l.curve.getPoint(t);
+        const nextPos = l.curve.getPoint((t + 0.01) % 1);
+        const dir = nextPos.clone().sub(pos).normalize();
+        const up = pos.clone().normalize();
 
-      lorryGroup.position.copy(lorryPos);
-      lorryGroup.up.copy(lorryUp);
-      lorryGroup.lookAt(lorryPos.clone().add(lorryDir));
+        l.group.position.copy(pos);
+        l.group.up.copy(up);
+        l.group.lookAt(pos.clone().add(dir));
 
-      // Rotate Wheels As Truck Drives
-      lorryWheels.forEach((w) => {
-        w.rotation.x += 0.15;
+        l.wheels.forEach((w) => {
+          w.rotation.x += 0.15;
+        });
       });
 
-      // 4. Active Freight Shifting Animation at Logistics Terminal
-      shiftingPackages.forEach((pkg) => {
+      // 4. Active Freight Shifting Across All Continental Terminals
+      allShiftingPackages.forEach((pkg) => {
         pkg.progress = (pkg.progress + pkg.speed) % 1;
-        // Shift along X axis from warehouse platform onto the lorry transfer bay
         const shiftX = (pkg.progress - 0.5) * 0.22;
-        // Arching trajectory lifting carton up and shifting it
         const shiftZ = 0.03 + Math.sin(pkg.progress * Math.PI) * 0.04;
         pkg.group.position.set(shiftX, pkg.offset, shiftZ);
         pkg.group.rotation.y = pkg.progress * Math.PI * 0.5;
@@ -1223,7 +1301,7 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
             </div>
             <h3 className="font-heading font-bold text-lg text-white">Global Trade Ecosystem</h3>
             <p className="font-['Inter'] text-xs text-[#CBD5E1] max-w-xs mx-auto">
-              Connecting buyers and suppliers across international air cargo, ocean freight, and overland logistics networks.
+              Continuous international air cargo, ocean freight, and overland logistics network connecting all continents.
             </p>
           </div>
         </div>
