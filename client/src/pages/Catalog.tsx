@@ -113,9 +113,9 @@ export default function Catalog({
         onOpenRfq={handleOpenRfq}
       />
 
-      <main className="flex-1 pt-24 sm:pt-28 pb-16">
+      <main className="flex-1 pb-16">
         {/* Catalog Hero Banner */}
-        <div className="w-full bg-[#0B0F19] text-white py-10 border-b border-white/10">
+        <div className="w-full bg-[#0B0F19] text-white pt-24 sm:pt-28 pb-10 border-b border-white/10">
           <div className="shell flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <div className="flex items-center gap-2 text-xs text-[#94A3B8] uppercase font-bold tracking-wider mb-1">

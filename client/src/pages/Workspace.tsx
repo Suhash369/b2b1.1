@@ -217,9 +217,9 @@ export default function Workspace({ cartItems = [] }: WorkspaceProps) {
     <div className="min-h-screen bg-[#F8FAFC] text-[#172033] flex flex-col font-['Inter']">
       <SiteHeader cartItems={cartItems} onOpenRfq={() => setIsRfqModalOpen(true)} />
 
-      <main className="flex-1 pt-24 sm:pt-28 pb-16">
+      <main className="flex-1 pb-16">
         {/* Workspace Top Header */}
-        <div className="w-full bg-[#0B0F19] text-white py-10 border-b border-white/10">
+        <div className="w-full bg-[#0B0F19] text-white pt-24 sm:pt-28 pb-10 border-b border-white/10">
           <div className="shell flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF7A00]">
