@@ -25,6 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { CartItem, Product } from "@/types";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
@@ -49,6 +50,7 @@ export default function Home({
   onRemoveCartItem,
 }: HomeProps) {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isRfqModalOpen, setIsRfqModalOpen] = useState(false);
   const [rfqTopic, setRfqTopic] = useState("General Enterprise Sourcing");
@@ -161,7 +163,7 @@ export default function Home({
               {/* Primary Dual-Journey CTAs (I'm a Buyer / I'm a Seller) */}
               <div className="flex flex-wrap items-center gap-3.5 pt-2">
                 <Link
-                  href="/products"
+                  href={user ? "/products" : "/login?role=buyer"}
                   className="px-6 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#EA580C] text-white font-heading font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 tracking-[-0.01em]"
                 >
                   <span>I&apos;m a Buyer</span>
@@ -169,7 +171,7 @@ export default function Home({
                 </Link>
 
                 <Link
-                  href="/supplier/onboarding"
+                  href={user ? "/supplier/dashboard" : "/login?role=seller"}
                   className="px-6 py-3 rounded-xl bg-[#1E293B] hover:bg-[#334155] border border-white/10 text-white font-heading font-semibold text-sm flex items-center gap-2 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 tracking-[-0.01em]"
                 >
                   <span>I&apos;m a Seller</span>
@@ -177,7 +179,7 @@ export default function Home({
                 </Link>
 
                 <Link
-                  href="/products"
+                  href={user ? "/products" : "/login?role=buyer"}
                   className="text-xs font-bold text-slate-300 hover:text-white underline underline-offset-4 flex items-center gap-1 pl-2 transition-colors"
                 >
                   Explore Products →
@@ -536,7 +538,7 @@ export default function Home({
 
                 <div className="pt-6 border-t border-white/10 flex items-center justify-between relative z-10">
                   <Link
-                    href="/products"
+                    href={user ? "/products" : "/login?role=buyer"}
                     className="px-6 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#EA580C] active:scale-95 text-white text-xs font-extrabold flex items-center gap-2 shadow-md transition-all group"
                   >
                     <span>Explore Products</span>
@@ -544,8 +546,14 @@ export default function Home({
                   </Link>
                   <button
                     type="button"
-                    onClick={() => handleOpenRfq()}
-                    className="text-xs font-bold text-slate-300 hover:text-[#FF7A00] active:scale-95 transition-all underline underline-offset-4"
+                    onClick={() => {
+                      if (user) {
+                        handleOpenRfq();
+                      } else {
+                        setLocation("/login?role=buyer");
+                      }
+                    }}
+                    className="text-xs font-bold text-slate-300 hover:text-[#FF7A00] active:scale-95 transition-all underline underline-offset-4 cursor-pointer"
                   >
                     Submit an RFQ →
                   </button>
@@ -600,14 +608,14 @@ export default function Home({
 
                 <div className="pt-6 border-t border-white/10 flex items-center justify-between relative z-10">
                   <Link
-                    href="/supplier/onboarding"
+                    href={user ? "/supplier/dashboard" : "/login?role=seller"}
                     className="px-6 py-3 rounded-xl bg-[#1E293B] hover:bg-[#334155] border border-white/10 active:scale-95 text-white text-xs font-extrabold flex items-center gap-2 shadow-md transition-all group"
                   >
                     <span>Start Selling</span>
                     <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
                   </Link>
                   <Link
-                    href="/subscription"
+                    href={user ? "/subscription" : "/login?role=seller"}
                     className="text-xs font-bold text-slate-300 hover:text-white active:scale-95 transition-all underline underline-offset-4"
                   >
                     View Seller Plans →
@@ -1024,7 +1032,7 @@ export default function Home({
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <Link
-                href="/products"
+                href={user ? "/products" : "/login?role=buyer"}
                 className="px-8 py-3.5 rounded-xl bg-[#FF7A00] hover:bg-[#EA580C] text-white font-heading font-bold text-sm shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
               >
                 <span>I&apos;m a Buyer</span>
@@ -1032,7 +1040,7 @@ export default function Home({
               </Link>
 
               <Link
-                href="/supplier/onboarding"
+                href={user ? "/supplier/dashboard" : "/login?role=seller"}
                 className="px-8 py-3.5 rounded-xl bg-[#1E293B] hover:bg-[#334155] border border-white/10 text-white font-heading font-bold text-sm shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
               >
                 <span>I&apos;m a Seller</span>
