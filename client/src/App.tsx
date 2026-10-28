@@ -13,50 +13,12 @@ import Subscription from "./pages/Subscription";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Suppliers from "./pages/Suppliers";
+import ProductDetail from "./pages/ProductDetail";
 import Workspace from "./pages/Workspace";
 import RecordPlaceholder from "./pages/RecordPlaceholder";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 import { CartItem, Product } from "./types";
-
-const INITIAL_CART_ITEMS: CartItem[] = [
-  {
-    id: "cart-1",
-    product: {
-      id: "prod-safety-helmet",
-      department: "Safety & PPE",
-      title: "Industrial Safety Helmet HDPE (Pack of 50)",
-      price: 185,
-      mrp: 260,
-      sku: "PPE-HLM-001",
-      imageUrl: "https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?auto=format&fit=crop&w=600&q=80",
-      inStock: true,
-      moq: 50,
-      hsnCode: "650610",
-      supplierName: "Apex SafeTech Ltd",
-      leadTime: "3-5 Days",
-    },
-    quantity: 100,
-  },
-  {
-    id: "cart-2",
-    product: {
-      id: "prod-carton-boxes",
-      department: "Packaging & Logistics",
-      title: "Heavy-Duty 5-Ply Corrugated Shipping Boxes",
-      price: 32,
-      mrp: 45,
-      sku: "PKG-BOX-5PLY",
-      imageUrl: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=80",
-      inStock: true,
-      moq: 200,
-      hsnCode: "481910",
-      supplierName: "Royale Packaging Pvt Ltd",
-      leadTime: "2-4 Days",
-    },
-    quantity: 500,
-  },
-];
 
 const workspaceRoutes = [
   "/verify-email", "/forgot-password",
@@ -75,9 +37,9 @@ export default function App() {
         return JSON.parse(saved);
       }
     } catch {
-      // fallback to initial
+      // fallback
     }
-    return INITIAL_CART_ITEMS;
+    return [];
   });
 
   useEffect(() => {
@@ -173,9 +135,18 @@ export default function App() {
             <Route path="/register" component={Register} />
 
             <Route path="/suppliers" component={Suppliers} />
-            <Route path="/products/:slug" component={() => <RecordPlaceholder kind="product" />} />
-            <Route path="/categories/:slug" component={() => <RecordPlaceholder kind="category" />} />
-            <Route path="/suppliers/:slug" component={() => <RecordPlaceholder kind="supplier" />} />
+            <Route path="/products/:slug">
+              {() => (
+                <ProductDetail
+                  cartItems={cartItems}
+                  onAddToCart={handleAddToCart}
+                  onUpdateCartQuantity={handleUpdateCartQuantity}
+                  onRemoveCartItem={handleRemoveCartItem}
+                />
+              )}
+            </Route>
+            <Route path="/categories/:slug" component={() => <Catalog cartItems={cartItems} onAddToCart={handleAddToCart} />} />
+            <Route path="/suppliers/:slug" component={Suppliers} />
             <Route path="/showcase" component={ComponentShowcase} />
 
             {workspaceRoutes.map((path) => (

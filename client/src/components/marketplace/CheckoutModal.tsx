@@ -19,16 +19,29 @@ export default function CheckoutModal({
   onOrderSuccess,
   onOpenGstInvoice,
 }: CheckoutModalProps) {
-  const [buyerName, setBuyerName] = useState("Casagrand Procure");
-  const [company, setCompany] = useState("Casagrand Royale Procurement Entity");
-  const [gstin, setGstin] = useState("33AAFCB1245P1ZX");
-  const [street, setStreet] = useState("A1-508, Casagrand Royale, Model School Road Extn, Sholinganallur");
-  const [city, setCity] = useState("Chennai");
-  const [state, setState] = useState("Tamil Nadu");
-  const [pincode, setPincode] = useState("600119");
-  const [phone, setPhone] = useState("+91 98401 22334");
+  const { data: user } = trpc.auth.me.useQuery();
+  const [buyerName, setBuyerName] = useState(user?.name || "");
+  const [company, setCompany] = useState(user?.companyName || "");
+  const [gstin, setGstin] = useState(user?.gstNumber || "");
+  const [street, setStreet] = useState(user?.address || "");
+  const [city, setCity] = useState(user?.city || "");
+  const [state, setState] = useState(user?.state || "");
+  const [pincode, setPincode] = useState("");
+  const [phone, setPhone] = useState(user?.phone || "");
   const [paymentMethod, setPaymentMethod] = useState("GST Proforma Bank Wire / RTGS");
   const [confirmedOrderNumber, setConfirmedOrderNumber] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (user) {
+      if (user.name) setBuyerName(user.name);
+      if (user.companyName) setCompany(user.companyName);
+      if (user.gstNumber) setGstin(user.gstNumber);
+      if (user.address) setStreet(user.address);
+      if (user.city) setCity(user.city);
+      if (user.state) setState(user.state);
+      if (user.phone) setPhone(user.phone);
+    }
+  }, [user]);
 
   const createOrderMutation = trpc.orders.create.useMutation();
 
@@ -85,12 +98,12 @@ export default function CheckoutModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#00081E]/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#030712]/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-[#CBD5E1] overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="p-5 bg-[#0A1F44] text-white flex items-center justify-between flex-shrink-0">
+        <div className="p-5 bg-[#0B0F19] text-white flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#2563EB]/25 flex items-center justify-center text-[#93c5fd]">
+            <div className="w-8 h-8 rounded-lg bg-[#FF7A00]/20 flex items-center justify-center text-[#FF7A00]">
               <Building size={18} />
             </div>
             <div>
@@ -114,7 +127,7 @@ export default function CheckoutModal({
         {confirmedOrderNumber ? (
           /* Confirmation Screen */
           <div className="p-6 space-y-5 overflow-y-auto">
-            <div className="p-5 bg-[#F2F3FF] border border-[#2563EB]/40 rounded-xl space-y-3 text-center">
+            <div className="p-5 bg-orange-50/50 border border-orange-200 rounded-xl space-y-3 text-center">
               <div className="w-12 h-12 mx-auto rounded-full bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center">
                 <CheckCircle2 size={28} />
               </div>
@@ -122,7 +135,7 @@ export default function CheckoutModal({
                 <span className="text-xs font-bold text-[#0D9488] tracking-wider uppercase">
                   Commercial Purchase Order Confirmed
                 </span>
-                <h4 className="font-heading font-extrabold text-2xl text-[#0A1F44] mt-1">
+                <h4 className="font-heading font-extrabold text-2xl text-[#0F172A] mt-1">
                   {confirmedOrderNumber}
                 </h4>
               </div>
@@ -142,11 +155,11 @@ export default function CheckoutModal({
               </div>
               <div className="flex justify-between py-1 border-b border-slate-200">
                 <span className="text-slate-500">Total Commercial Amount</span>
-                <span className="font-bold text-[#0A1F44]">₹{totalPayable.toLocaleString("en-IN")} (incl. 18% GST)</span>
+                <span className="font-bold text-[#FF7A00]">₹{totalPayable.toLocaleString("en-IN")} (incl. 18% GST)</span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Payment Routing</span>
-                <span className="font-semibold text-[#0051D5]">{paymentMethod}</span>
+                <span className="font-semibold text-[#FF7A00]">{paymentMethod}</span>
               </div>
             </div>
 
@@ -157,14 +170,14 @@ export default function CheckoutModal({
                   onClose();
                   onOpenGstInvoice();
                 }}
-                className="py-3 px-4 border border-[#CBD5E1] rounded-xl text-xs font-bold text-[#0A1F44] hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors"
+                className="py-3 px-4 border border-[#CBD5E1] rounded-xl text-xs font-bold text-[#0F172A] hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors"
               >
                 <FileText size={16} className="text-[#0D9488]" /> View GST Tax Invoice
               </button>
               <button
                 type="button"
                 onClick={handleDone}
-                className="py-3 px-4 bg-[#0A1F44] text-white rounded-xl text-xs font-bold hover:bg-[#00081E] transition-colors"
+                className="py-3 px-4 bg-[#0B0F19] text-white rounded-xl text-xs font-bold hover:bg-[#030712] transition-colors"
               >
                 Return to Storefront
               </button>
@@ -173,23 +186,23 @@ export default function CheckoutModal({
         ) : (
           /* Checkout Details Form */
           <form onSubmit={handleSubmitOrder} className="p-6 space-y-4 overflow-y-auto flex-1">
-            <div className="p-3.5 bg-[#F2F3FF] border border-[#2563EB]/30 rounded-xl flex items-center justify-between">
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-slate-500 block uppercase font-medium">Order Total Payable</span>
-                <span className="text-lg font-heading font-extrabold text-[#0A1F44]">
+                <span className="text-lg font-heading font-extrabold text-[#0F172A]">
                   ₹{totalPayable.toLocaleString("en-IN")}
                 </span>
                 <span className="text-[11px] text-[#0D9488] ml-2 font-semibold">
                   (Includes ₹{gstAmount.toLocaleString("en-IN")} 18% GST)
                 </span>
               </div>
-              <span className="px-2.5 py-1 rounded bg-[#0A1F44] text-white text-xs font-semibold">
+              <span className="px-2.5 py-1 rounded bg-[#0B0F19] text-white text-xs font-semibold">
                 {cartItems.reduce((acc, i) => acc + i.quantity, 0)} Units Total
               </span>
             </div>
 
             <div className="space-y-3">
-              <span className="text-xs font-bold text-[#2563EB] tracking-wider uppercase block">
+              <span className="text-xs font-bold text-[#FF7A00] tracking-wider uppercase block">
                 1. Purchasing Entity & Commercial Registration
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -200,7 +213,7 @@ export default function CheckoutModal({
                     required
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
-                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
                 <div>
@@ -210,14 +223,14 @@ export default function CheckoutModal({
                     required
                     value={gstin}
                     onChange={(e) => setGstin(e.target.value.toUpperCase())}
-                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs font-mono uppercase focus:outline-none focus:border-[#2563EB]"
+                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs font-mono uppercase focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
               </div>
             </div>
 
             <div className="space-y-3 pt-2">
-              <span className="text-xs font-bold text-[#2563EB] tracking-wider uppercase block">
+              <span className="text-xs font-bold text-[#FF7A00] tracking-wider uppercase block">
                 2. Shipping & Warehouse Destination
               </span>
               <div>
@@ -227,7 +240,7 @@ export default function CheckoutModal({
                   required
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
-                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -238,7 +251,7 @@ export default function CheckoutModal({
                     required
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
                 <div>
@@ -248,7 +261,7 @@ export default function CheckoutModal({
                     required
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
                 <div>
@@ -258,20 +271,20 @@ export default function CheckoutModal({
                     required
                     value={pincode}
                     onChange={(e) => setPincode(e.target.value)}
-                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs font-mono focus:outline-none focus:border-[#2563EB]"
+                    className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs font-mono focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
               </div>
             </div>
 
             <div className="space-y-3 pt-2">
-              <span className="text-xs font-bold text-[#2563EB] tracking-wider uppercase block">
+              <span className="text-xs font-bold text-[#FF7A00] tracking-wider uppercase block">
                 3. B2B Commercial Payment Terms
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label
                   className={`p-3 border rounded-xl flex items-start gap-2.5 cursor-pointer transition-colors ${
-                    paymentMethod.includes("Wire") ? "border-[#2563EB] bg-[#F2F3FF]" : "border-[#CBD5E1]"
+                    paymentMethod.includes("Wire") ? "border-[#FF7A00] bg-orange-50/50" : "border-[#CBD5E1]"
                   }`}
                 >
                   <input
@@ -282,14 +295,14 @@ export default function CheckoutModal({
                     className="mt-0.5"
                   />
                   <div>
-                    <strong className="block text-xs text-[#0A1F44]">Proforma Wire / RTGS</strong>
+                    <strong className="block text-xs text-[#0F172A]">Proforma Wire / RTGS</strong>
                     <span className="text-[11px] text-slate-500">Direct transfer with official Tax Invoice reference.</span>
                   </div>
                 </label>
 
                 <label
                   className={`p-3 border rounded-xl flex items-start gap-2.5 cursor-pointer transition-colors ${
-                    paymentMethod.includes("Credit") ? "border-[#2563EB] bg-[#F2F3FF]" : "border-[#CBD5E1]"
+                    paymentMethod.includes("Credit") ? "border-[#FF7A00] bg-orange-50/50" : "border-[#CBD5E1]"
                   }`}
                 >
                   <input
@@ -300,8 +313,8 @@ export default function CheckoutModal({
                     className="mt-0.5"
                   />
                   <div>
-                    <strong className="block text-xs text-[#0A1F44]">Net-30 Trade Credit</strong>
-                    <span className="text-[11px] text-slate-500">For pre-approved Casagrand &amp; corporate accounts.</span>
+                    <strong className="block text-xs text-[#0F172A]">Net-30 Trade Credit</strong>
+                    <span className="text-[11px] text-slate-500">For pre-approved verified corporate accounts.</span>
                   </div>
                 </label>
               </div>
@@ -318,7 +331,7 @@ export default function CheckoutModal({
               <button
                 type="submit"
                 disabled={createOrderMutation.isPending}
-                className="px-7 py-3 bg-[#F59E0B] text-[#0A1F44] rounded-xl text-xs font-bold hover:bg-[#D97706] transition-all flex items-center gap-2 shadow-md disabled:opacity-60"
+                className="px-7 py-3 bg-[#FF7A00] text-white rounded-xl text-xs font-bold hover:bg-[#EA580C] transition-all flex items-center gap-2 shadow-md disabled:opacity-60"
               >
                 {createOrderMutation.isPending ? "Generating PO..." : "Place Commercial Purchase Order"}
               </button>

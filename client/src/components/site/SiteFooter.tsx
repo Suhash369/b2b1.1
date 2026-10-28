@@ -1,15 +1,15 @@
 import React from "react";
 import { Link } from "wouter";
-import { ShieldCheck, Mail, Phone, MapPin, Building, FileText, ArrowRight } from "lucide-react";
+import { ShieldCheck, Phone, Building, FileText } from "lucide-react";
 
 export default function SiteFooter() {
   return (
-    <footer className="w-full bg-[#00081E] text-slate-300 font-['Inter'] border-t border-white/10 select-none">
+    <footer className="w-full bg-[#030712] text-slate-300 font-['Inter'] border-t border-white/10 select-none">
       {/* Upper Value Proposition Strip */}
-      <div className="border-b border-white/10 py-8 bg-[#0A1F44]/50">
+      <div className="border-b border-white/10 py-8 bg-[#0B0F19]/80">
         <div className="shell grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#2563EB]/20 border border-[#2563EB]/40 flex items-center justify-center text-[#93c5fd] flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#FF7A00]/20 border border-[#FF7A00]/40 flex items-center justify-center text-[#FF7A00] flex-shrink-0">
               <ShieldCheck size={20} />
             </div>
             <div>
@@ -37,7 +37,7 @@ export default function SiteFooter() {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#F59E0B]/20 border border-[#F59E0B]/40 flex items-center justify-center text-[#fcd34d] flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#FF7A00]/20 border border-[#FF7A00]/40 flex items-center justify-center text-[#FF7A00] flex-shrink-0">
               <Building size={20} />
             </div>
             <div>
@@ -45,7 +45,7 @@ export default function SiteFooter() {
                 Pan-India Logistics Desk
               </strong>
               <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                Direct dispatches from Casagrand Royale Chennai Hub and partnered national warehouses.
+                Direct dispatches from certified fulfillment centers and partnered national warehouses.
               </p>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function SiteFooter() {
       </div>
 
       {/* Main Footer Links & Company Details */}
-      <div className="shell py-12 grid grid-cols-1 md:grid-cols-5 gap-8 text-xs">
+      <div className="shell py-12 grid grid-cols-1 md:grid-cols-4 gap-8 text-xs">
         {/* Company Identity */}
         <div className="md:col-span-2 space-y-4">
           <div className="flex items-center gap-2.5">
@@ -82,23 +82,13 @@ export default function SiteFooter() {
               />
             </div>
             <span className="font-heading font-extrabold text-xl text-white tracking-tight">
-              Bazro<span className="text-[#F59E0B]">Kart</span>
+              Bazro<span className="text-[#FF7A00]">Kart</span>
             </span>
           </div>
 
           <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
             BazroKart connects manufacturers, suppliers, wholesalers, distributors, MSMEs, and business buyers across India through structured procurement, volume pricing, and verified trade networks.
           </p>
-
-          <div className="p-3 bg-white/5 border border-white/10 rounded-xl space-y-1.5 text-[11px] font-mono text-slate-400">
-            <div><strong className="text-slate-200">Entity:</strong> BazroKart Private Limited</div>
-            <div><strong className="text-slate-200">CIN:</strong> U74999TN2023PTC158902</div>
-            <div><strong className="text-slate-200">GSTIN:</strong> 33AAFCB1245P1ZX (State: 33 TN)</div>
-            <div className="flex items-start gap-1.5 pt-1 text-slate-300">
-              <MapPin size={14} className="text-[#F59E0B] flex-shrink-0 mt-0.5" />
-              <span>A1-508, Casagrand Royale, Model School Road Extn., Sholinganallur, Chennai, Tamil Nadu - 600119, India</span>
-            </div>
-          </div>
         </div>
 
         {/* Column 1: Marketplace Solutions */}
@@ -130,25 +120,10 @@ export default function SiteFooter() {
             <li><Link href="/suppliers" className="hover:text-white transition-colors">Supplier Directory</Link></li>
           </ul>
         </div>
-
-        {/* Column 3: Workspaces & Legal */}
-        <div className="space-y-3">
-          <span className="font-bold text-white text-xs uppercase tracking-wider block">
-            Workspaces &amp; Auth
-          </span>
-          <ul className="space-y-2 text-slate-400">
-            <li><Link href="/login" className="hover:text-white transition-colors">Account Login</Link></li>
-            <li><Link href="/register" className="hover:text-white transition-colors">Buyer Registration</Link></li>
-            <li><Link href="/supplier/onboarding" className="hover:text-white transition-colors">Seller Registration</Link></li>
-            <li><Link href="/buyer/dashboard" className="hover:text-white transition-colors">Buyer Workspace</Link></li>
-            <li><Link href="/supplier/dashboard" className="hover:text-white transition-colors">Supplier Workspace</Link></li>
-            <li><Link href="/admin/dashboard" className="hover:text-white transition-colors">Administration</Link></li>
-          </ul>
-        </div>
       </div>
 
       {/* Bottom Legal Rights Bar */}
-      <div className="border-t border-white/10 py-5 bg-[#000514] text-[11px] text-slate-500">
+      <div className="border-t border-white/10 py-5 bg-[#020408] text-[11px] text-slate-500">
         <div className="shell flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
             © {new Date().getFullYear()} BazroKart Private Limited. All rights reserved.
@@ -158,7 +133,7 @@ export default function SiteFooter() {
             <span>•</span>
             <span>CIN: U74999TN2023PTC158902</span>
             <span>•</span>
-            <span>Sholinganallur, Chennai HUB</span>
+            <span>Chennai, Tamil Nadu, India</span>
           </div>
         </div>
       </div>

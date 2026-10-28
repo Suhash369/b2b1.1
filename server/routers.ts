@@ -5,6 +5,8 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
+import { hashPassword, verifyPassword } from "./authHelper";
+import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
   system: systemRouter,
@@ -23,46 +25,62 @@ export const appRouter = router({
       .input(
         z.object({
           email: z.string().email(),
-          password: z.string().optional(),
+          password: z.string().min(1, "Password is required"),
           role: z.enum(["buyer", "seller", "admin"]).optional(),
         })
       )
       .mutation(async ({ input, ctx }) => {
-        let user = await db.getUserByEmail(input.email);
+        const user = await db.getUserByEmail(input.email);
         if (!user) {
-          const openId = `usr_${Date.now()}`;
-          const namePart = input.email.split("@")[0];
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No account found with this email. Please check your credentials or register.",
+          });
+        }
+
+        // Verify password if user has passwordHash
+        if (user.passwordHash) {
+          const isValid = verifyPassword(input.password, user.passwordHash);
+          if (!isValid) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "Invalid password. Please check your credentials.",
+            });
+          }
+        } else {
+          // First login after migration: set password hash
+          const passwordHash = hashPassword(input.password);
           await db.upsertUser({
-            openId,
-            name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
-            email: input.email,
-            role: input.role || "buyer",
-            loginMethod: "credentials",
+            ...user,
+            passwordHash,
             lastSignedIn: new Date(),
           });
-          user = await db.getUserByEmail(input.email);
         }
 
-        if (user) {
-          try {
-            const token = await sdk.createSessionToken(user.openId, {
-              name: user.name || "User",
-            });
-            const cookieOptions = getSessionCookieOptions(ctx.req);
-            ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-          } catch (e) {
-            console.warn("[Auth] Could not create session token:", e);
-          }
+        try {
+          const token = await sdk.createSessionToken(user.openId, {
+            name: user.name || "User",
+          });
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        } catch (e) {
+          console.warn("[Auth] Could not create session token:", e);
         }
 
-        return { success: true, user };
+        await db.upsertUser({
+          ...user,
+          lastSignedIn: new Date(),
+        });
+        const updated = await db.getUserByOpenId(user.openId);
+        return { success: true, user: updated };
       }),
 
     register: publicProcedure
       .input(
         z.object({
-          name: z.string().min(2),
-          email: z.string().email(),
+          name: z.string().min(2, "Name must be at least 2 characters"),
+          email: z.string().email("Valid email address required"),
+          password: z.string().min(6, "Password must be at least 6 characters"),
           phone: z.string().optional(),
           companyName: z.string().optional(),
           gstNumber: z.string().optional(),
@@ -73,7 +91,16 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
+        const existing = await db.getUserByEmail(input.email);
+        if (existing) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "An account with this email address already exists. Please sign in instead.",
+          });
+        }
+
         const openId = `usr_${Date.now()}`;
+        const passwordHash = hashPassword(input.password);
         await db.upsertUser({
           openId,
           name: input.name,
@@ -86,6 +113,8 @@ export const appRouter = router({
           city: input.city || null,
           state: input.state || null,
           loginMethod: "credentials",
+          isVerified: false,
+          passwordHash,
           lastSignedIn: new Date(),
         });
 
@@ -111,6 +140,39 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+
+    updateProfile: publicProcedure
+      .input(
+        z.object({
+          name: z.string().optional(),
+          phone: z.string().optional(),
+          companyName: z.string().optional(),
+          gstNumber: z.string().optional(),
+          address: z.string().optional(),
+          city: z.string().optional(),
+          state: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You must be signed in to update your profile.",
+          });
+        }
+        await db.upsertUser({
+          ...ctx.user,
+          name: input.name !== undefined ? input.name : ctx.user.name,
+          phone: input.phone !== undefined ? input.phone : ctx.user.phone,
+          companyName: input.companyName !== undefined ? input.companyName : ctx.user.companyName,
+          gstNumber: input.gstNumber !== undefined ? input.gstNumber : ctx.user.gstNumber,
+          address: input.address !== undefined ? input.address : ctx.user.address,
+          city: input.city !== undefined ? input.city : ctx.user.city,
+          state: input.state !== undefined ? input.state : ctx.user.state,
+        });
+        const updated = await db.getUserByOpenId(ctx.user.openId);
+        return { success: true, user: updated };
+      }),
   }),
 
   // -------------------------------------------------------------
@@ -126,6 +188,8 @@ export const appRouter = router({
             query: z.string().optional(),
             sort: z.enum(["relevance", "price_asc", "price_desc", "rating", "newest"]).optional(),
             inStockOnly: z.boolean().optional(),
+            includeUnpublished: z.boolean().optional(),
+            supplierId: z.number().optional(),
           })
           .optional()
       )
@@ -135,8 +199,9 @@ export const appRouter = router({
 
     getBySlug: publicProcedure
       .input(z.object({ slug: z.string() }))
-      .query(async ({ input }) => {
-        return db.getProductBySlug(input.slug);
+      .query(async ({ input, ctx }) => {
+        const isAdmin = ctx.user?.role === "admin";
+        return db.getProductBySlug(input.slug, ctx.user?.id, isAdmin, ctx.user?.companyName);
       }),
 
     getById: publicProcedure
@@ -167,31 +232,58 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Authentication required. Please sign in as a registered supplier to list products.",
+          });
+        }
+        if (ctx.user.role !== "seller" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only registered suppliers and manufacturers can publish products.",
+          });
+        }
+
         const id = `bzk-${Date.now()}`;
         const slug = input.slug || input.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+        // Calculate genuine discount percentage if MRP > price
+        const numPrice = parseFloat(input.price) || 0;
+        const numMrp = parseFloat(input.mrp) || 0;
+        let calculatedDiscount: string | null = null;
+        if (numMrp > numPrice && numMrp > 0) {
+          const pct = Math.round(((numMrp - numPrice) / numMrp) * 100);
+          calculatedDiscount = `${pct}% off`;
+        }
+
+        const supplierOrigin = ctx.user.city
+          ? `${ctx.user.city}${ctx.user.state ? `, ${ctx.user.state}` : ""}`
+          : input.origin || null;
+
         const product = await db.createProduct({
           id,
           title: input.title,
           slug,
           department: input.department,
           categoryId: input.categoryId || null,
-          supplierId: ctx.user?.id || 1,
-          supplierName: input.supplierName || ctx.user?.companyName || "BazroKart Verified Supplier",
+          supplierId: ctx.user.id,
+          supplierName: ctx.user.companyName || ctx.user.name || "Registered Supplier",
           price: input.price,
           mrp: input.mrp,
-          discount: input.discount || null,
+          discount: calculatedDiscount,
           moq: input.moq,
           inStock: true,
-          rating: "5.0",
-          reviews: 1,
+          rating: null,
+          reviews: 0,
           sku: input.sku,
-          badge: "New Listing",
-          badgeColor: "bg-[#2563EB]/10 text-[#2563EB]",
+          badge: null,
+          badgeColor: null,
           imageAlt: input.imageAlt || input.title,
           imageUrl: input.imageUrl,
           specs: input.specs || null,
-          leadTime: input.leadTime || "Dispatch in 24h",
-          origin: input.origin || "Casagrand Royale, Chennai HUB",
+          leadTime: input.leadTime || null,
+          origin: supplierOrigin,
           hsnCode: input.hsnCode || null,
           isPublished: true,
         });
@@ -205,14 +297,50 @@ export const appRouter = router({
           updates: z.record(z.string(), z.any()),
         })
       )
-      .mutation(async ({ input }) => {
-        return db.updateProduct(input.id, input.updates);
+      .mutation(async ({ input, ctx }) => {
+        const existing = await db.getProductById(input.id);
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Product not found." });
+        }
+        if (ctx.user) {
+          const isDev = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
+          const isOwner =
+            isDev ||
+            ctx.user.role === "admin" ||
+            ctx.user.role === "seller" ||
+            existing.supplierId === ctx.user.id ||
+            !existing.supplierId ||
+            (Boolean(ctx.user.companyName) && existing.supplierName?.toLowerCase() === ctx.user.companyName?.toLowerCase());
+          if (!isOwner) {
+            throw new TRPCError({ code: "FORBIDDEN", message: "You can only update your own listings." });
+          }
+        }
+        const updated = await db.updateProduct(input.id, input.updates);
+        return { success: true, product: updated };
       }),
 
     delete: publicProcedure
       .input(z.object({ id: z.string() }))
-      .mutation(async ({ input }) => {
-        return db.deleteProduct(input.id);
+      .mutation(async ({ input, ctx }) => {
+        const existing = await db.getProductById(input.id);
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Product not found." });
+        }
+        if (ctx.user) {
+          const isDev = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
+          const isOwner =
+            isDev ||
+            ctx.user.role === "admin" ||
+            ctx.user.role === "seller" ||
+            existing.supplierId === ctx.user.id ||
+            !existing.supplierId ||
+            (Boolean(ctx.user.companyName) && existing.supplierName?.toLowerCase() === ctx.user.companyName?.toLowerCase());
+          if (!isOwner) {
+            throw new TRPCError({ code: "FORBIDDEN", message: "You can only delete your own listings." });
+          }
+        }
+        const success = await db.deleteProduct(input.id);
+        return { success, id: input.id };
       }),
   }),
 
@@ -227,6 +355,23 @@ export const appRouter = router({
       .input(z.object({ slug: z.string() }))
       .query(async ({ input }) => {
         return db.getCategoryBySlug(input.slug);
+      }),
+  }),
+
+  // -------------------------------------------------------------
+  // Suppliers Router
+  // -------------------------------------------------------------
+  suppliers: router({
+    list: publicProcedure
+      .input(z.object({ query: z.string().optional() }).optional())
+      .query(async ({ input }) => {
+        return db.listSuppliers(input?.query);
+      }),
+
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        return db.getSupplierBySlug(input.slug);
       }),
   }),
 
@@ -269,8 +414,18 @@ export const appRouter = router({
 
     list: publicProcedure
       .input(z.object({ buyerEmail: z.string().optional() }).optional())
-      .query(async ({ input }) => {
-        return db.listRfqs(input?.buyerEmail);
+      .query(async ({ input, ctx }) => {
+        // Enforce tenant isolation for buyers: buyers only see their own RFQs
+        if (ctx.user?.role === "buyer") {
+          return db.listRfqs(ctx.user.email || undefined);
+        }
+        if (ctx.user?.role === "seller" || ctx.user?.role === "admin") {
+          return db.listRfqs();
+        }
+        if (input?.buyerEmail) {
+          return db.listRfqs(input.buyerEmail);
+        }
+        return [];
       }),
 
     getById: publicProcedure
@@ -302,7 +457,7 @@ export const appRouter = router({
       .input(
         z.object({
           rfqId: z.string(),
-          supplierName: z.string(),
+          supplierName: z.string().optional(),
           unitPrice: z.string(),
           totalAmount: z.string(),
           moq: z.number().default(1),
@@ -313,10 +468,16 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Please sign in as a supplier to submit quotations." });
+        }
+        if (ctx.user.role !== "seller" && ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only registered suppliers can submit quotations." });
+        }
         return db.createQuote({
           rfqId: input.rfqId,
-          supplierId: ctx.user?.id || 2,
-          supplierName: input.supplierName,
+          supplierId: ctx.user.id,
+          supplierName: ctx.user.companyName || ctx.user.name || input.supplierName || "Registered Supplier",
           unitPrice: input.unitPrice,
           totalAmount: input.totalAmount,
           moq: input.moq,
@@ -331,6 +492,25 @@ export const appRouter = router({
       .input(z.object({ rfqId: z.string() }))
       .query(async ({ input }) => {
         return db.listQuotesForRfq(input.rfqId);
+      }),
+
+    listAll: publicProcedure
+      .input(z.object({ supplierId: z.number().optional() }).optional())
+      .query(async ({ input, ctx }) => {
+        // Enforce supplier vs buyer access control
+        if (ctx.user?.role === "seller") {
+          return db.listAllQuotes(ctx.user.id);
+        }
+        if (ctx.user?.role === "buyer") {
+          const buyerRfqs = await db.listRfqs(ctx.user.email || undefined);
+          const rfqIds = new Set(buyerRfqs.map((r) => r.id));
+          const allQuotes = await db.listAllQuotes();
+          return allQuotes.filter((q) => rfqIds.has(q.rfqId));
+        }
+        if (ctx.user?.role === "admin") {
+          return db.listAllQuotes(input?.supplierId);
+        }
+        return [];
       }),
 
     updateStatus: publicProcedure
@@ -379,10 +559,20 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Please sign in to place purchase orders." });
+        }
+        let primarySupplierId: number | null = null;
+        if (input.items && input.items.length > 0) {
+          const firstProduct = await db.getProductById(input.items[0].productId);
+          if (firstProduct?.supplierId) {
+            primarySupplierId = firstProduct.supplierId;
+          }
+        }
         return db.createOrder({
-          buyerId: ctx.user?.id || 1,
-          buyerName: input.buyerName,
-          supplierId: 1,
+          buyerId: ctx.user.id,
+          buyerName: ctx.user.name || input.buyerName,
+          supplierId: primarySupplierId,
           totalAmount: input.totalAmount,
           gstAmount: input.gstAmount,
           items: input.items,
@@ -396,7 +586,17 @@ export const appRouter = router({
     list: publicProcedure
       .input(z.object({ buyerId: z.number().optional() }).optional())
       .query(async ({ input, ctx }) => {
-        return db.listOrders(input?.buyerId || ctx.user?.id);
+        if (ctx.user?.role === "buyer") {
+          return db.listOrders(ctx.user.id);
+        }
+        if (ctx.user?.role === "seller") {
+          const all = await db.listOrders();
+          return all.filter((o) => o.supplierId === ctx.user?.id);
+        }
+        if (ctx.user?.role === "admin") {
+          return db.listOrders(input?.buyerId);
+        }
+        return [];
       }),
 
     getById: publicProcedure
@@ -429,13 +629,15 @@ export const appRouter = router({
     subscribe: publicProcedure
       .input(z.object({ planName: z.enum(["basic", "premium", "elite"]) }))
       .mutation(async ({ input, ctx }) => {
-        const userId = ctx.user?.id || 1;
-        return db.createSubscription(userId, input.planName);
+        if (!ctx.user) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Please sign in to subscribe." });
+        }
+        return db.createSubscription(ctx.user.id, input.planName);
       }),
 
     getActive: publicProcedure.query(async ({ ctx }) => {
-      const userId = ctx.user?.id || 1;
-      return db.getSubscriptionByUserId(userId);
+      if (!ctx.user) return undefined;
+      return db.getSubscriptionByUserId(ctx.user.id);
     }),
   }),
 
@@ -541,6 +743,28 @@ export const appRouter = router({
     }),
     listRfqs: publicProcedure.query(async () => {
       return db.listRfqs();
+    }),
+  }),
+
+  // -------------------------------------------------------------
+  // Notifications Router
+  // -------------------------------------------------------------
+  notifications: router({
+    list: publicProcedure.query(async ({ ctx }) => {
+      if (!ctx.user) return [];
+      return db.listNotifications(ctx.user.id);
+    }),
+
+    markAsRead: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) return false;
+        return db.markNotificationAsRead(input.id, ctx.user.id);
+      }),
+
+    unreadCount: publicProcedure.query(async ({ ctx }) => {
+      if (!ctx.user) return 0;
+      return db.getUnreadNotificationsCount(ctx.user.id);
     }),
   }),
 });

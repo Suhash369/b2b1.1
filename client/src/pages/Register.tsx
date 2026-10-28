@@ -8,9 +8,13 @@ import SiteFooter from "@/components/site/SiteFooter";
 
 export default function Register() {
   const [, setLocation] = useLocation();
-  const [role, setRole] = useState<"buyer" | "seller">("buyer");
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialRole = searchParams.get("role") === "seller" ? "seller" : "buyer";
+
+  const [role, setRole] = useState<"buyer" | "seller">(initialRole);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [gstNumber, setGstNumber] = useState("");
@@ -21,10 +25,15 @@ export default function Register() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
+      return;
+    }
     try {
       await registerMutation.mutateAsync({
         name,
         email,
+        password,
         phone,
         companyName,
         gstNumber,
@@ -44,30 +53,30 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-[#0F172A] flex flex-col font-['Inter']">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#172033] flex flex-col font-['Inter']">
       <SiteHeader />
 
       <main className="flex-1 pt-24 sm:pt-28 pb-16 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 p-8 space-y-6">
+        <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-[#E2E8F0] p-8 space-y-6">
           <div className="text-center space-y-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D9488]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#FF7A00]">
               Verified Trade Onboarding
             </span>
-            <h1 className="font-heading font-extrabold text-[clamp(1.5rem,2.2vw,1.85rem)] text-[#0A1F44] tracking-[-0.03em] leading-[1.2] text-balance">
+            <h1 className="font-heading font-extrabold text-[clamp(1.5rem,2.2vw,1.85rem)] text-[#0F172A] tracking-[-0.03em] leading-[1.2] text-balance">
               Register Your Business on BazroKart
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#64748B]">
               Join India&apos;s verified B2B network for wholesale procurement and OEM distribution
             </p>
           </div>
 
           {/* Account Type Toggle */}
-          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl text-xs font-semibold">
+          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 border border-[#E2E8F0] rounded-xl text-xs font-semibold">
             <button
               type="button"
               onClick={() => setRole("buyer")}
               className={`py-2.5 rounded-lg transition-colors ${
-                role === "buyer" ? "bg-[#0A1F44] text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                role === "buyer" ? "bg-[#FF7A00] text-white shadow-xs" : "text-[#64748B] hover:text-[#172033]"
               }`}
             >
               Business Buyer
@@ -76,7 +85,7 @@ export default function Register() {
               type="button"
               onClick={() => setRole("seller")}
               className={`py-2.5 rounded-lg transition-colors ${
-                role === "seller" ? "bg-[#0A1F44] text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                role === "seller" ? "bg-[#FF7A00] text-white shadow-xs" : "text-[#64748B] hover:text-[#172033]"
               }`}
             >
               Manufacturer / Supplier
@@ -93,7 +102,7 @@ export default function Register() {
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="e.g. Tirupur Apparel Matrix"
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -104,7 +113,7 @@ export default function Register() {
                   value={gstNumber}
                   onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
                   placeholder="33AAFCB1245P1ZX"
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg font-mono uppercase focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-slate-300 rounded-lg font-mono uppercase focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
             </div>
@@ -118,7 +127,7 @@ export default function Register() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Ramesh Kumar"
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -130,7 +139,7 @@ export default function Register() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98401 22334"
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
             </div>
@@ -143,7 +152,20 @@ export default function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="purchasing@company.in"
-                className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-800 mb-1">Create Account Password</label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimum 6 characters"
+                className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
               />
             </div>
 
@@ -155,7 +177,7 @@ export default function Register() {
                   required
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -166,7 +188,7 @@ export default function Register() {
                   required
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
             </div>
@@ -174,7 +196,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={registerMutation.isPending}
-              className="w-full py-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-60 text-xs mt-2"
+              className="w-full py-3 bg-[#FF7A00] hover:bg-[#EA580C] text-white rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-60 text-xs mt-2"
             >
               <span>{registerMutation.isPending ? "Creating Account..." : `Complete ${role === "buyer" ? "Buyer" : "Seller"} Registration`}</span>
               <ArrowRight size={15} />
@@ -183,7 +205,7 @@ export default function Register() {
 
           <div className="pt-3 border-t border-slate-100 text-center text-xs text-slate-500">
             <span>Already have an account?</span>{" "}
-            <Link href="/login" className="font-bold text-[#0051D5] hover:underline">
+            <Link href="/login" className="font-bold text-[#FF7A00] hover:underline">
               Sign in to workspace →
             </Link>
           </div>

@@ -243,3 +243,20 @@ export const enterpriseApplications = mysqlTable("enterprise_applications", {
 
 export type EnterpriseApplication = typeof enterpriseApplications.$inferSelect;
 export type InsertEnterpriseApplication = typeof enterpriseApplications.$inferInsert;
+
+/**
+ * Platform Real-Time Business Notifications
+ */
+export const notifications = mysqlTable("notifications", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  type: mysqlEnum("type", ["rfq", "quote", "order", "system"]).default("system").notNull(),
+  link: varchar("link", { length: 255 }),
+  isRead: boolean("isRead").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;

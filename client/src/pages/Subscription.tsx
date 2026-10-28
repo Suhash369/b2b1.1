@@ -41,11 +41,11 @@ export default function Subscription({ cartItems = [] }: SubscriptionProps) {
     <div className="min-h-screen bg-slate-50 text-[#0F172A] flex flex-col font-['Inter']">
       <SiteHeader cartItems={cartItems} />
 
-      <main className="flex-1 pt-24 sm:pt-28 pb-16">
+      <main className="flex-1 pb-16">
         {/* Hero Section */}
-        <div className="w-full bg-[#0A1F44] text-white py-14 border-b border-white/10">
+        <div className="w-full bg-[#0B0F19] text-white pt-24 pb-14 sm:pt-28 border-b border-white/10">
           <div className="shell space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D9488]/25 text-[#5eead4] text-xs font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-[#FF7A00] text-xs font-bold uppercase tracking-wider">
               <CreditCard size={14} /> BazroKart Supplier &amp; Buyer Membership
             </div>
             <h1 className="font-heading font-extrabold text-[clamp(2rem,3.4vw,2.75rem)] text-white tracking-[-0.035em] leading-[1.12] text-balance">
@@ -82,12 +82,12 @@ export default function Subscription({ cartItems = [] }: SubscriptionProps) {
                   key={plan.id}
                   className={`rounded-2xl p-8 flex flex-col justify-between border relative transition-all duration-200 ${
                     plan.recommended
-                      ? "bg-[#0A1F44] text-white border-[#F59E0B] shadow-2xl scale-105 z-10"
+                      ? "bg-[#0B0F19] text-white border-[#FF7A00] shadow-2xl scale-105 z-10"
                       : "bg-white text-slate-900 border-slate-200 shadow-sm"
                   }`}
                 >
                   {plan.recommended && (
-                    <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-[#F59E0B] text-[#0A1F44] text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                    <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-[#FF7A00] text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow">
                       Most Popular for MSMEs
                     </div>
                   )}
@@ -95,7 +95,7 @@ export default function Subscription({ cartItems = [] }: SubscriptionProps) {
                   <div className="space-y-4">
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <h3 className={`font-heading font-extrabold text-xl ${plan.recommended ? "text-white" : "text-[#0A1F44]"}`}>
+                        <h3 className={`font-heading font-extrabold text-xl ${plan.recommended ? "text-white" : "text-[#0F172A]"}`}>
                           {plan.name}
                         </h3>
                         {isActive && (
@@ -110,7 +110,7 @@ export default function Subscription({ cartItems = [] }: SubscriptionProps) {
                     </div>
 
                     <div className="pt-2 flex items-baseline gap-1">
-                      <span className={`text-3xl font-extrabold font-heading ${plan.recommended ? "text-white" : "text-[#0A1F44]"}`}>
+                      <span className={`text-3xl font-extrabold font-heading ${plan.recommended ? "text-white" : "text-[#0F172A]"}`}>
                         ₹{plan.price.toLocaleString("en-IN")}
                       </span>
                       <span className={`text-xs ${plan.recommended ? "text-slate-400" : "text-slate-500"}`}>
@@ -127,7 +127,7 @@ export default function Subscription({ cartItems = [] }: SubscriptionProps) {
                     <ul className={`space-y-2.5 text-xs pt-2 ${plan.recommended ? "text-slate-200" : "text-slate-600"}`}>
                       {plan.features.map((feat: string, idx: number) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <Check size={14} className={plan.recommended ? "text-[#F59E0B] flex-shrink-0 mt-0.5" : "text-[#0D9488] flex-shrink-0 mt-0.5"} />
+                          <Check size={14} className={plan.recommended ? "text-[#FF7A00] flex-shrink-0 mt-0.5" : "text-[#0D9488] flex-shrink-0 mt-0.5"} />
                           <span>{feat}</span>
                         </li>
                       ))}
@@ -141,8 +141,8 @@ export default function Subscription({ cartItems = [] }: SubscriptionProps) {
                       onClick={() => handleSubscribe(plan.id as any)}
                       className={`w-full py-3 rounded-xl text-center text-xs font-bold transition-all shadow-md disabled:opacity-50 ${
                         plan.recommended
-                          ? "bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44]"
-                          : "bg-[#0A1F44] hover:bg-[#00081E] text-white"
+                          ? "bg-[#FF7A00] hover:bg-[#EA580C] text-white"
+                          : "bg-[#0B0F19] hover:bg-[#030712] text-white"
                       }`}
                     >
                       {isActive ? "Current Active Plan" : subscribeMutation.isPending ? "Activating..." : plan.ctaText}
@@ -155,11 +155,11 @@ export default function Subscription({ cartItems = [] }: SubscriptionProps) {
 
           {/* Institutional Note */}
           <div className="p-6 bg-white border border-slate-200 rounded-2xl max-w-2xl mx-auto text-center space-y-2 text-xs text-slate-600">
-            <span className="font-bold text-[#0A1F44] block text-sm">Need Custom Enterprise Billing or Net-60 Credit?</span>
+            <span className="font-bold text-[#0F172A] block text-sm">Need Custom Enterprise Billing or Net-60 Credit?</span>
             <p>
               For public sector undertakings (PSUs), government tenders, and annual trade volume exceeding ₹10 Crore, contact our institutional desk for customized vendor contracts.
             </p>
-            <div className="pt-2 text-[#0051D5] font-semibold">
+            <div className="pt-2 text-[#FF7A00] font-semibold">
               corporate.desk@bazrokart.com • Toll-Free: 1800-419-BAZRO
             </div>
           </div>

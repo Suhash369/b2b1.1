@@ -1,4 +1,5 @@
 import "dotenv/config";
+process.env.NODE_ENV = process.env.NODE_ENV || "development";
 import { createServer } from "http";
 import { createExpressApp } from "./app";
 import { serveStatic, setupVite } from "./vite";

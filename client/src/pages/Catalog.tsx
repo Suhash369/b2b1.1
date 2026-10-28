@@ -115,10 +115,10 @@ export default function Catalog({
 
       <main className="flex-1 pt-24 sm:pt-28 pb-16">
         {/* Catalog Hero Banner */}
-        <div className="w-full bg-[#0A1F44] text-white py-10 border-b border-white/10">
+        <div className="w-full bg-[#0B0F19] text-white py-10 border-b border-white/10">
           <div className="shell flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <div className="flex items-center gap-2 text-xs text-[#87A9E9] uppercase font-bold tracking-wider mb-1">
+              <div className="flex items-center gap-2 text-xs text-[#94A3B8] uppercase font-bold tracking-wider mb-1">
                 <Link href="/" className="hover:text-white transition-colors">Home</Link>
                 <span>/</span>
                 <span>Wholesale Catalog</span>
@@ -140,7 +140,7 @@ export default function Catalog({
             <button
               type="button"
               onClick={() => handleOpenRfq(`Bulk RFQ for ${activeDepartment}`)}
-              className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2"
+              className="px-5 py-2.5 bg-[#FF7A00] hover:bg-[#EA580C] text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2"
             >
               <FileText size={15} /> Request Department RFQ
             </button>
@@ -159,7 +159,7 @@ export default function Catalog({
                   onClick={() => handleSelectDepartment(dept)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${
                     activeDepartment === dept
-                      ? "bg-[#0A1F44] text-white shadow-xs"
+                      ? "bg-[#0B0F19] text-white shadow-xs"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
@@ -170,7 +170,7 @@ export default function Catalog({
 
             {/* Search & Sort Controls */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-              <form onSubmit={handleSearchSubmit} className="w-full sm:max-w-md flex items-center bg-slate-100 rounded-xl px-3 py-1.5 text-xs text-slate-800 border border-slate-200 focus-within:bg-white focus-within:border-[#2563EB]">
+              <form onSubmit={handleSearchSubmit} className="w-full sm:max-w-md flex items-center bg-slate-100 rounded-xl px-3 py-1.5 text-xs text-slate-800 border border-slate-200 focus-within:bg-white focus-within:border-[#FF7A00]">
                 <Search size={15} className="text-slate-400 mr-2 flex-shrink-0" />
                 <input
                   type="text"
@@ -199,7 +199,7 @@ export default function Catalog({
                     type="checkbox"
                     checked={inStockOnly}
                     onChange={(e) => setInStockOnly(e.target.checked)}
-                    className="rounded text-[#2563EB]"
+                    className="rounded text-[#FF7A00]"
                   />
                   <span>In Stock Only</span>
                 </label>
@@ -228,11 +228,11 @@ export default function Catalog({
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="bg-white rounded-2xl p-4 border border-slate-200 space-y-3 animate-pulse">
-                  <div className="w-full h-44 bg-slate-200 rounded-xl" />
-                  <div className="h-4 bg-slate-200 rounded w-3/4" />
-                  <div className="h-3 bg-slate-200 rounded w-1/2" />
-                  <div className="h-6 bg-slate-200 rounded w-1/3 pt-2" />
+                <div key={i} className="bg-white rounded-2xl p-4 border border-slate-200 space-y-3 shadow-xs">
+                  <div className="w-full h-44 rounded-xl skeleton-shimmer" />
+                  <div className="h-4 rounded w-3/4 skeleton-shimmer" />
+                  <div className="h-3 rounded w-1/2 skeleton-shimmer" />
+                  <div className="h-6 rounded w-1/3 pt-2 skeleton-shimmer" />
                 </div>
               ))}
             </div>
@@ -242,11 +242,12 @@ export default function Catalog({
                 const price = typeof product.price === "string" ? parseFloat(product.price) : product.price;
                 const mrp = typeof product.mrp === "string" ? parseFloat(product.mrp) : product.mrp;
                 const moq = product.moq || 1;
+                const discountLabel = mrp > price ? `${Math.round(((mrp - price) / mrp) * 100)}% off` : product.discount || null;
 
                 return (
                   <div
                     key={product.id}
-                    className="group bg-white rounded-2xl border border-slate-200 hover:border-[#2563EB]/40 shadow-xs hover:shadow-lg transition-all duration-200 flex flex-col justify-between overflow-hidden"
+                    className="group bg-white rounded-2xl border border-slate-200 hover:border-[#FF7A00]/50 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden card-smooth-hover card-entrance"
                   >
                     {/* Image Area */}
                     <div className="relative w-full h-48 bg-slate-50 p-4 flex items-center justify-center overflow-hidden border-b border-slate-100">
@@ -259,35 +260,54 @@ export default function Catalog({
                       <img
                         src={product.imageUrl}
                         alt={product.imageAlt || product.title}
-                        className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src =
+                            "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300' fill='%23f1f5f9'><rect width='400' height='300' fill='%23f8fafc'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%2394a3b8'>No image available</text></svg>";
+                        }}
+                        className="w-full h-full object-contain img-zoom-hover"
                         loading="lazy"
                       />
 
                       {/* Quick View Hover Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenQuickView(product as any)}
-                        className="absolute inset-0 bg-[#0A1F44]/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-bold backdrop-blur-xs"
-                      >
-                        <Eye size={16} /> Quick View
-                      </button>
+                      <div className="absolute inset-0 bg-[#0B0F19]/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-bold backdrop-blur-xs p-4">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenQuickView(product as any)}
+                          className="px-2.5 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 text-white flex items-center gap-1 transition-all"
+                        >
+                          <Eye size={14} /> Quick
+                        </button>
+                        <Link
+                          href={`/products/${product.slug}`}
+                          className="px-2.5 py-1.5 rounded-lg bg-[#FF7A00] hover:bg-[#EA580C] active:scale-95 text-white flex items-center gap-1 transition-all"
+                        >
+                          Details →
+                        </Link>
+                      </div>
                     </div>
 
                     {/* Content Area */}
                     <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                       <div className="space-y-1">
-                        <span className="text-[10px] uppercase font-body font-medium text-[#2563EB] tracking-wider block">
+                        <span className="text-[10px] uppercase font-body font-medium text-[#FF7A00] tracking-wider block">
                           {product.department}
                         </span>
 
-                        <h3 className="font-body font-semibold text-sm sm:text-[15px] text-[#0A1F44] line-clamp-2 leading-snug group-hover:text-[#2563EB] transition-colors tracking-[-0.015em]">
-                          {product.title}
-                        </h3>
+                        <Link href={`/products/${product.slug}`} className="block">
+                          <h3 className="font-body font-semibold text-sm sm:text-[15px] text-[#0F172A] line-clamp-2 leading-snug group-hover:text-[#FF7A00] transition-colors tracking-[-0.015em]">
+                            {product.title}
+                          </h3>
+                        </Link>
 
-                        <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                        <div className="flex items-center gap-2 text-[11px] text-[#64748B]">
                           <span className="font-mono text-slate-600">SKU: {product.sku}</span>
-                          <span>•</span>
-                          <span className="text-amber-500 font-body font-semibold">★ {product.rating || "4.8"}</span>
+                          {product.rating && typeof product.reviews === "number" && product.reviews > 0 && (
+                            <>
+                              <span>•</span>
+                              <span className="text-[#FF7A00] font-body font-semibold">★ {product.rating}</span>
+                              <span className="text-slate-400">({product.reviews})</span>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -295,7 +315,7 @@ export default function Catalog({
                       <div className="pt-2 border-t border-slate-100 space-y-1">
                         <div className="flex items-baseline justify-between">
                           <div className="flex items-baseline gap-1.5">
-                            <span className="text-lg font-body font-semibold text-[#0A1F44] tabular-nums tracking-[-0.015em]">
+                            <span className="text-lg font-body font-semibold text-[#0F172A] tabular-nums tracking-[-0.015em]">
                               ₹{price.toLocaleString("en-IN")}
                             </span>
                             {mrp > price && (
@@ -304,14 +324,18 @@ export default function Catalog({
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] font-body font-medium text-[#F59E0B] tracking-wide">
-                            {product.discount || "Wholesale"}
-                          </span>
+                          {discountLabel && (
+                            <span className="text-[10px] font-body font-medium text-[#FF7A00] tracking-wide">
+                              {discountLabel}
+                            </span>
+                          )}
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] text-slate-500">
+                        <div className="flex items-center justify-between text-[11px] text-[#64748B]">
                           <span>MOQ: <strong className="text-slate-800">{moq} Units</strong></span>
-                          <span className="text-[#0D9488] font-semibold">{product.leadTime || "24h Dispatch"}</span>
+                          {product.leadTime && (
+                            <span className="text-[#0D9488] font-semibold">{product.leadTime}</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -321,18 +345,16 @@ export default function Catalog({
                       <button
                         type="button"
                         onClick={() => onAddToCart && onAddToCart(product as any, moq)}
-                        className="py-2 px-2.5 rounded-lg bg-[#0A1F44] hover:bg-[#00081E] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                        className="py-2 px-2.5 rounded-lg bg-[#1E293B] hover:bg-[#0F172A] active:scale-95 text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-all"
                       >
-                        <ShoppingCart size={13} className="text-white" />
-                        <span className="text-white font-bold">Add {moq}</span>
+                        <ShoppingCart size={13} /> Add {moq}
                       </button>
                       <button
                         type="button"
                         onClick={() => handleOpenRfq(`${product.title} (SKU: ${product.sku})`)}
-                        className="py-2 px-2.5 rounded-lg bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                        className="py-2 px-2.5 rounded-lg bg-[#FF7A00] hover:bg-[#EA580C] active:scale-95 text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-all shadow-xs"
                       >
-                        <FileText size={13} className="text-[#0A1F44]" />
-                        <span className="text-[#0A1F44] font-bold">RFQ</span>
+                        <FileText size={13} /> RFQ
                       </button>
                     </div>
                   </div>
@@ -346,10 +368,10 @@ export default function Catalog({
               </div>
               <div className="space-y-1">
                 <h3 className="font-heading font-bold text-lg text-slate-800">
-                  No listings found for this filter
+                  No products are available yet. Please check back later.
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Try clearing search filters or request a custom quotation directly from authorized manufacturers.
+                  New wholesale lots and verified manufacturer listings are published regularly.
                 </p>
               </div>
               <button
@@ -359,7 +381,7 @@ export default function Catalog({
                   setActiveDepartment("All Products");
                   setLocation("/products");
                 }}
-                className="px-5 py-2.5 bg-[#0A1F44] text-white rounded-xl text-xs font-bold"
+                className="px-5 py-2.5 bg-[#0B0F19] hover:bg-[#030712] text-white rounded-xl text-xs font-bold transition-colors"
               >
                 Reset Catalog Filters
               </button>

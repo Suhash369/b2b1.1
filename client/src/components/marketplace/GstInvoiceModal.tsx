@@ -1,6 +1,7 @@
 import React from "react";
 import { CartItem } from "@/types";
 import { X, Printer, Download, ShieldCheck } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface GstInvoiceModalProps {
   isOpen: boolean;
@@ -15,7 +16,13 @@ export default function GstInvoiceModal({
   cartItems,
   orderNumber = "BZK-TAX-2026-08912",
 }: GstInvoiceModalProps) {
+  const { data: user } = trpc.auth.me.useQuery();
+
   if (!isOpen) return null;
+
+  const buyerTitle = user?.companyName || user?.name || "Corporate Procurement Buyer";
+  const buyerAddress = user?.address || (user?.city ? `${user.city}, ${user.state || "India"}` : "Address provided on file");
+  const buyerGstin = user?.gstNumber ? `GSTIN: ${user.gstNumber}` : "GSTIN: Unregistered / Consumer Buyer";
 
   const totalPayable = cartItems.reduce(
     (sum, item) => sum + (typeof item.product.price === "string" ? parseFloat(item.product.price) : item.product.price) * item.quantity,
@@ -31,10 +38,10 @@ export default function GstInvoiceModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#00081E]/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#030712]/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-[#CBD5E1] overflow-hidden max-h-[94vh] flex flex-col">
         {/* Modal Controls Bar */}
-        <div className="p-4 bg-[#0A1F44] text-white flex items-center justify-between flex-shrink-0 print:hidden">
+        <div className="p-4 bg-[#0B0F19] text-white flex items-center justify-between flex-shrink-0 print:hidden">
           <div className="flex items-center gap-2">
             <span className="font-heading font-bold text-sm">
               Official GST Tax Invoice Preview
@@ -67,8 +74,8 @@ export default function GstInvoiceModal({
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b-2 border-slate-900">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="font-heading text-2xl font-extrabold tracking-tight text-[#0A1F44]">
-                  Bazro<span className="text-[#2563EB]">Kart</span>
+                <span className="font-heading text-2xl font-extrabold tracking-tight text-[#0F172A]">
+                  Bazro<span className="text-[#FF7A00]">Kart</span>
                 </span>
                 <span className="text-xs px-2 py-0.5 bg-slate-100 font-bold uppercase rounded text-slate-700">
                   Private Limited
@@ -85,7 +92,7 @@ export default function GstInvoiceModal({
             </div>
 
             <div className="text-right sm:min-w-[200px]">
-              <span className="text-xs uppercase font-extrabold text-[#0051D5] tracking-wider block">
+              <span className="text-xs uppercase font-extrabold text-[#FF7A00] tracking-wider block">
                 TAX INVOICE / PROFORMA
               </span>
               <div className="font-mono text-base font-extrabold text-slate-900 mt-1">
@@ -106,9 +113,9 @@ export default function GstInvoiceModal({
               <span className="font-bold uppercase text-slate-400 text-[10px] tracking-wider block mb-1">
                 Billed To (Purchasing Entity):
               </span>
-              <div className="font-bold text-sm text-slate-900">Casagrand Royale Procurement Entity</div>
-              <div className="text-slate-600 mt-0.5">Sholinganallur Industrial Zone, Chennai, TN - 600119</div>
-              <div className="font-mono mt-1 text-slate-700">GSTIN: 33AAFCB1245P1ZX • State Code: 33</div>
+              <div className="font-bold text-sm text-slate-900">{buyerTitle}</div>
+              <div className="text-slate-600 mt-0.5">{buyerAddress}</div>
+              <div className="font-mono mt-1 text-slate-700">{buyerGstin}</div>
             </div>
 
             <div>
@@ -124,7 +131,7 @@ export default function GstInvoiceModal({
           {/* Items Table */}
           <div className="border border-slate-300 rounded-xl overflow-hidden">
             <table className="w-full text-xs text-left">
-              <thead className="bg-[#0A1F44] text-white">
+              <thead className="bg-[#0B0F19] text-white">
                 <tr>
                   <th className="p-3 font-semibold">#</th>
                   <th className="p-3 font-semibold">Description of Goods</th>
@@ -183,7 +190,7 @@ export default function GstInvoiceModal({
                 <span>SGST (9.0%):</span>
                 <span className="font-semibold text-slate-900">₹{sgst.toLocaleString("en-IN")}</span>
               </div>
-              <div className="flex justify-between pt-2 border-t-2 border-slate-900 text-sm font-extrabold text-[#0A1F44]">
+              <div className="flex justify-between pt-2 border-t-2 border-slate-900 text-sm font-extrabold text-[#0F172A]">
                 <span>Invoice Total:</span>
                 <span className="font-heading font-extrabold text-base">
                   ₹{totalPayable.toLocaleString("en-IN")}

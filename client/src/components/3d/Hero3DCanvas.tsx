@@ -57,9 +57,9 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     directionalLight.shadow.mapSize.height = 1024;
     scene.add(directionalLight);
 
-    const blueLight = new THREE.PointLight(0x2563eb, 3.5, 18);
-    blueLight.position.set(-6, -2, 4);
-    scene.add(blueLight);
+    const orangeLight = new THREE.PointLight(0xff7a00, 3.5, 18);
+    orangeLight.position.set(-6, -2, 4);
+    scene.add(orangeLight);
 
     const amberLight = new THREE.PointLight(0xf59e0b, 3.0, 15);
     amberLight.position.set(5, 3, -3);
@@ -77,7 +77,7 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     const globeRadius = 1.9;
     const globeGeom = new THREE.SphereGeometry(globeRadius, 28, 28);
     const globeMat = new THREE.MeshStandardMaterial({
-      color: 0x0a1f44,
+      color: 0x0b0f19,
       roughness: 0.7,
       metalness: 0.3,
       transparent: true,
@@ -88,7 +88,7 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
 
     // Wireframe Outer Latitude/Longitude Cage
     const wireGeom = new THREE.WireframeGeometry(new THREE.SphereGeometry(globeRadius * 1.03, 16, 16));
-    const wireMat = new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.35 });
+    const wireMat = new THREE.LineBasicMaterial({ color: 0xff7a00, transparent: true, opacity: 0.35 });
     const wireSphere = new THREE.LineSegments(wireGeom, wireMat);
     ecosystemGroup.add(wireSphere);
 
@@ -96,7 +96,7 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     const containerGroup = new THREE.Group();
     ecosystemGroup.add(containerGroup);
 
-    const containerMatBlue = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.4, metalness: 0.6 });
+    const containerMatOrange = new THREE.MeshStandardMaterial({ color: 0xff7a00, roughness: 0.4, metalness: 0.6 });
     const containerMatNavy = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5, metalness: 0.5 });
     const containerMatAmber = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.4 });
 
@@ -111,9 +111,9 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     };
 
     const c1 = createContainer(1.8, 1.2, 1.2, 0.2, 0.4, containerMatAmber);
-    const c2 = createContainer(2.1, 0.7, 0.9, -0.1, 0.8, containerMatBlue);
+    const c2 = createContainer(2.1, 0.7, 0.9, -0.1, 0.8, containerMatOrange);
     const c3 = createContainer(-1.9, 1.4, 0.8, 0.3, -0.5, containerMatNavy);
-    const c4 = createContainer(-2.2, 0.8, 0.4, 0.1, -0.8, containerMatBlue);
+    const c4 = createContainer(-2.2, 0.8, 0.4, 0.1, -0.8, containerMatOrange);
     containerGroup.add(c1, c2, c3, c4);
 
     // 3. 3D Packages & Cartons with Ribbons
@@ -161,7 +161,7 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
     );
 
     const arcMat = new THREE.LineDashedMaterial({
-      color: 0x60a5fa,
+      color: 0xff7a00,
       dashSize: 0.15,
       gapSize: 0.08,
       linewidth: 2,
@@ -220,7 +220,7 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
       g.add(sphere);
 
       const ringGeom = new THREE.RingGeometry(0.2, 0.26, 24);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0x93c5fd, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0xff7a00, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
       const ring = new THREE.Mesh(ringGeom, ringMat);
       ring.rotation.x = Math.PI / 2;
       g.add(ring);
@@ -331,29 +331,12 @@ export default function Hero3DCanvas({ className = "" }: Hero3DCanvasProps) {
       {/* 3D Canvas Mount Point */}
       <div ref={mountRef} className="w-full h-full flex items-center justify-center" aria-label="Interactive 3D B2B Trade Ecosystem" />
 
-      {/* Floating Micro-Badges on top of 3D Canvas */}
-      <div className="absolute top-4 left-4 bg-[#0A1F44]/90 backdrop-blur-md border border-[#F59E0B]/30 px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2 pointer-events-none transform hover:scale-105 transition-transform duration-300">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#0D9488] animate-pulse" />
-        <span className="font-['Inter'] text-xs font-semibold text-[#FFFFFF] tracking-wide">Pan-India Trade Grid</span>
-      </div>
-
-      <div className="absolute bottom-6 right-6 bg-[#0A1F44]/95 backdrop-blur-md border border-[#2563EB]/40 px-3.5 py-2 rounded-xl shadow-xl flex items-center gap-3 pointer-events-none">
-        <div className="w-7 h-7 rounded-lg bg-[#2563EB]/20 flex items-center justify-center text-[#93c5fd]">
-          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <div>
-          <div className="text-[11px] font-bold text-[#F59E0B] tracking-wider uppercase">Casagrand Royale HUB</div>
-          <div className="text-xs font-semibold text-[#FFFFFF]">Direct Verified Dispatch</div>
-        </div>
-      </div>
 
       {/* CSS 3D Fallback if WebGL is disabled */}
       {!hasWebGL && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#0A1F44] to-[#00081E] p-8 text-center rounded-2xl border border-[#CBD5E1]/20">
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#0B0F19] to-[#030712] p-8 text-center rounded-2xl border border-white/10">
           <div className="space-y-3">
-            <div className="w-16 h-16 mx-auto rounded-full bg-[#2563EB]/20 border border-[#F59E0B] flex items-center justify-center text-[#F59E0B]">
+            <div className="w-16 h-16 mx-auto rounded-full bg-[#FF7A00]/20 border border-[#FF7A00] flex items-center justify-center text-[#FF7A00]">
               <span className="text-2xl">🌐</span>
             </div>
             <h3 className="font-heading font-bold text-lg text-white">Interactive Trade Ecosystem</h3>

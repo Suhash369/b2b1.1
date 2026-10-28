@@ -55,11 +55,11 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
     <div className="min-h-screen bg-slate-50 text-[#0F172A] flex flex-col font-['Inter']">
       <SiteHeader cartItems={cartItems} />
 
-      <main className="flex-1 pt-24 sm:pt-28 pb-16">
+      <main className="flex-1 pb-16">
         {/* Hero Section */}
-        <div className="w-full bg-[#0A1F44] text-white py-14 border-b border-white/10">
+        <div className="w-full bg-[#0B0F19] text-white pt-24 pb-14 sm:pt-28 border-b border-white/10">
           <div className="shell space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2563EB]/25 text-[#93c5fd] text-xs font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-[#FF7A00] text-xs font-bold uppercase tracking-wider">
               <Building size={14} /> BazroKart Institutional Empanelment Desk
             </div>
             <h1 className="font-heading font-extrabold text-[clamp(2rem,3.4vw,2.75rem)] text-white tracking-[-0.035em] leading-[1.12] text-balance">
@@ -80,14 +80,14 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                 onClick={() => setSelectedCategory(cat.id as any)}
                 className={`p-6 rounded-2xl border cursor-pointer transition-all ${
                   selectedCategory === cat.id
-                    ? "bg-white border-[#2563EB] shadow-lg ring-2 ring-[#2563EB]/20"
+                    ? "bg-white border-[#FF7A00] shadow-lg ring-2 ring-[#FF7A00]/20"
                     : "bg-white border-slate-200 hover:border-slate-300 shadow-xs"
                 }`}
               >
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700">
                   {cat.badge}
                 </span>
-                <h3 className="font-heading font-bold text-base text-[#0A1F44] mt-3">
+                <h3 className="font-heading font-bold text-base text-[#0F172A] mt-3">
                   {cat.title}
                 </h3>
                 <p className="text-xs text-slate-600 mt-2 leading-relaxed">
@@ -112,11 +112,11 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
               <span className="text-xs font-bold text-[#0D9488] uppercase tracking-wider block">
                 Empanelment Registry
               </span>
-              <h2 className="font-heading font-extrabold text-2xl text-[#0A1F44] mt-1">
+              <h2 className="font-heading font-extrabold text-2xl text-[#0F172A] mt-1">
                 Apply for Enterprise Empanelment
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                Selected Track: <strong className="text-[#2563EB] capitalize">{selectedCategory.replace("_", " ")}</strong>
+                Selected Track: <strong className="text-[#FF7A00] capitalize">{selectedCategory.replace("_", " ")}</strong>
               </p>
             </div>
 
@@ -134,7 +134,7 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                 <button
                   type="button"
                   onClick={() => setIsSubmitted(false)}
-                  className="px-6 py-2.5 bg-[#0A1F44] text-white rounded-xl text-xs font-bold"
+                  className="px-6 py-2.5 bg-[#0B0F19] text-white rounded-xl text-xs font-bold"
                 >
                   Submit Another Application
                 </button>
@@ -150,7 +150,7 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       placeholder="e.g. Tamil Nadu Agro Naturals"
-                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
 
@@ -162,7 +162,7 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                       value={contactPerson}
                       onChange={(e) => setContactPerson(e.target.value)}
                       placeholder="e.g. R. Subramanian (Director)"
-                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
                 </div>
@@ -176,7 +176,7 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="contact@company.in"
-                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
 
@@ -188,7 +188,7 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+91 98400 12345"
-                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
                 </div>
@@ -202,7 +202,7 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="e.g. Coimbatore"
-                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
 
@@ -214,7 +214,7 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                       value={state}
                       onChange={(e) => setState(e.target.value)}
                       placeholder="e.g. Tamil Nadu"
-                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
                 </div>
@@ -273,14 +273,14 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
                     value={needs}
                     onChange={(e) => setNeeds(e.target.value)}
                     placeholder="Describe what products you manufacture or what component inputs you seek to procure in wholesale quantities..."
-                    className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={applyMutation.isPending}
-                  className="w-full py-3 bg-[#0A1F44] hover:bg-[#00081E] text-white rounded-xl font-bold transition-all shadow-md disabled:opacity-60"
+                  className="w-full py-3 bg-[#FF7A00] hover:bg-[#EA580C] text-white rounded-xl font-bold transition-all shadow-md disabled:opacity-60"
                 >
                   {applyMutation.isPending ? "Submitting Application..." : "Submit Empanelment Application"}
                 </button>

@@ -58,3 +58,40 @@ export interface HeroSlide {
   imageAlt: string;
   tabLabel: string;
 }
+
+export interface Rfq {
+  id: string;
+  rfqNumber: string;
+  buyerId?: number | null;
+  buyerName: string;
+  buyerEmail: string;
+  buyerPhone?: string | null;
+  category: string;
+  title: string;
+  description: string;
+  quantity: number;
+  unit: string;
+  targetPrice?: string | null;
+  destinationCity?: string | null;
+  requiredDate?: string | null;
+  status: "open" | "quoted" | "accepted" | "closed";
+  createdAt: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface Quote {
+  id: string;
+  quoteNumber: string;
+  rfqId: string;
+  supplierId?: number | null;
+  supplierName: string;
+  unitPrice: string;
+  totalAmount: string;
+  moq: number;
+  deliveryDays: number;
+  validUntil?: string | null;
+  paymentTerms?: string | null;
+  notes?: string | null;
+  status: "pending" | "accepted" | "rejected";
+  createdAt: string | Date;
+}

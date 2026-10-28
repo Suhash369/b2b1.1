@@ -61,25 +61,25 @@ export default function Services({ cartItems = [] }: ServicesProps) {
   };
 
   const serviceIcons: Record<string, React.ReactNode> = {
-    b2b_connect: <Handshake size={24} className="text-[#2563EB]" />,
+    b2b_connect: <Handshake size={24} className="text-[#FF7A00]" />,
     grants_funding: <Landmark size={24} className="text-[#0D9488]" />,
-    education_training: <GraduationCap size={24} className="text-[#F59E0B]" />,
-    incubation: <Rocket size={24} className="text-[#0A1F44]" />,
-    investor_connect: <TrendingUp size={24} className="text-[#2563EB]" />,
+    education_training: <GraduationCap size={24} className="text-[#FF7A00]" />,
+    incubation: <Rocket size={24} className="text-[#FF7A00]" />,
+    investor_connect: <TrendingUp size={24} className="text-[#FF7A00]" />,
     marketing_branding: <Megaphone size={24} className="text-[#0D9488]" />,
-    mentoring: <BrainCircuit size={24} className="text-[#F59E0B]" />,
-    networking: <Share2 size={24} className="text-[#0A1F44]" />,
+    mentoring: <BrainCircuit size={24} className="text-[#FF7A00]" />,
+    networking: <Share2 size={24} className="text-[#FF7A00]" />,
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-[#0F172A] flex flex-col font-['Inter']">
       <SiteHeader cartItems={cartItems} />
 
-      <main className="flex-1 pt-24 sm:pt-28 pb-16">
+      <main className="flex-1 pb-16">
         {/* Hero Section */}
-        <div className="w-full bg-[#0A1F44] text-white py-14 border-b border-white/10">
+        <div className="w-full bg-[#0B0F19] text-white pt-24 pb-14 sm:pt-28 border-b border-white/10">
           <div className="shell space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D9488]/25 text-[#5eead4] text-xs font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-[#FF7A00] text-xs font-bold uppercase tracking-wider">
               <ShieldCheck size={14} /> BazroKart Value-Added Services
             </div>
             <h1 className="font-heading font-extrabold text-[clamp(2rem,3.4vw,2.75rem)] text-white tracking-[-0.035em] leading-[1.12] text-balance">
@@ -97,14 +97,14 @@ export default function Services({ cartItems = [] }: ServicesProps) {
             {services.map((svc) => (
               <div
                 key={svc.id}
-                className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-[#2563EB]/40 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-[#FF7A00]/40 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
               >
                 <div className="space-y-3">
                   <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                    {serviceIcons[svc.id] || <Handshake size={24} className="text-[#2563EB]" />}
+                    {serviceIcons[svc.id] || <Handshake size={24} className="text-[#FF7A00]" />}
                   </div>
 
-                  <h3 className="font-heading font-bold text-base text-[#0A1F44]">
+                  <h3 className="font-heading font-bold text-base text-[#0F172A]">
                     {svc.name}
                   </h3>
 
@@ -117,7 +117,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                   <button
                     type="button"
                     onClick={() => handleOpenEnquiry(svc.name)}
-                    className="w-full py-2.5 rounded-xl bg-[#0A1F44] hover:bg-[#00081E] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-xl bg-[#0B0F19] hover:bg-[#030712] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                   >
                     <span>Request Advisory</span>
                     <ArrowRight size={13} />
@@ -131,9 +131,9 @@ export default function Services({ cartItems = [] }: ServicesProps) {
 
       {/* Service Enquiry Modal */}
       {selectedService && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#00081E]/75 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#030712]/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#CBD5E1] overflow-hidden">
-            <div className="p-5 bg-[#0A1F44] text-white flex items-center justify-between">
+            <div className="p-5 bg-[#0B0F19] text-white flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-bold text-base text-white">
                   Service Enquiry
@@ -163,7 +163,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                 <button
                   type="button"
                   onClick={() => setSelectedService(null)}
-                  className="px-6 py-2.5 bg-[#0A1F44] text-white rounded-xl text-xs font-bold"
+                  className="px-6 py-2.5 bg-[#0B0F19] text-white rounded-xl text-xs font-bold"
                 >
                   Close
                 </button>
@@ -178,7 +178,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     placeholder="e.g. Casagrand Procurement Desk"
-                    className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                    className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
 
@@ -191,7 +191,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       placeholder="e.g. R. Subramanian"
-                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
                   <div>
@@ -202,7 +202,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                       value={userPhone}
                       onChange={(e) => setUserPhone(e.target.value)}
                       placeholder="+91 98401 22334"
-                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                      className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
                 </div>
@@ -215,7 +215,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
                     placeholder="subramanian@company.in"
-                    className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                    className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
 
@@ -226,7 +226,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder={`Tell us what specific help your business needs regarding ${selectedService}...`}
-                    className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#2563EB]"
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
 
@@ -241,7 +241,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                   <button
                     type="submit"
                     disabled={submitEnquiryMutation.isPending}
-                    className="px-6 py-2.5 bg-[#F59E0B] text-[#0A1F44] rounded-xl font-bold hover:bg-[#D97706] disabled:opacity-60"
+                    className="px-6 py-2.5 bg-[#FF7A00] text-white rounded-xl font-bold hover:bg-[#EA580C] disabled:opacity-60"
                   >
                     {submitEnquiryMutation.isPending ? "Submitting..." : "Send Commercial Enquiry"}
                   </button>

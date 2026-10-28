@@ -26,12 +26,22 @@ export default function BulkRfqModal({
   const [targetPrice, setTargetPrice] = useState("");
   const [destinationCity, setDestinationCity] = useState("Chennai");
   const [requiredDate, setRequiredDate] = useState("Within 14 Days");
-  const [buyerName, setBuyerName] = useState("Casagrand Procure");
-  const [buyerEmail, setBuyerEmail] = useState("corporate.desk@bazrokart.com");
-  const [buyerPhone, setBuyerPhone] = useState("+91 98401 22334");
+  const { data: user } = trpc.auth.me.useQuery();
+  const [buyerName, setBuyerName] = useState("");
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [buyerPhone, setBuyerPhone] = useState("");
   const [submittedRfqNumber, setSubmittedRfqNumber] = useState<string | null>(null);
 
   const createRfqMutation = trpc.rfq.create.useMutation();
+
+  useEffect(() => {
+    if (user) {
+      if (user.name) setBuyerName(user.name);
+      if (user.email) setBuyerEmail(user.email);
+      if (user.phone) setBuyerPhone(user.phone);
+      if (user.city) setDestinationCity(user.city);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (defaultTopic) {
@@ -72,12 +82,12 @@ export default function BulkRfqModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#00081E]/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#030712]/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-[#CBD5E1] overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="p-5 bg-[#0A1F44] text-white flex items-center justify-between flex-shrink-0">
+        <div className="p-5 bg-[#0B0F19] text-white flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#F59E0B]/20 flex items-center justify-center text-[#F59E0B]">
+            <div className="w-8 h-8 rounded-lg bg-[#FF7A00]/20 flex items-center justify-center text-[#FF7A00]">
               <FileText size={18} />
             </div>
             <div>
@@ -85,7 +95,7 @@ export default function BulkRfqModal({
                 Request for Quotation (RFQ)
               </h3>
               <p className="text-[11px] text-[#CBD5E1]">
-                Pan-India Wholesale Pricing • Direct Factory & Supplier Sourcing
+                Pan-India Wholesale Pricing • Direct Factory &amp; Supplier Sourcing
               </p>
             </div>
           </div>
@@ -101,7 +111,7 @@ export default function BulkRfqModal({
         {submittedRfqNumber ? (
           /* Confirmation Screen */
           <div className="p-6 space-y-5 overflow-y-auto">
-            <div className="p-5 bg-[#F2F3FF] border border-[#2563EB]/40 rounded-xl space-y-3 text-center">
+            <div className="p-5 bg-orange-50/50 border border-orange-200 rounded-xl space-y-3 text-center">
               <div className="w-12 h-12 mx-auto rounded-full bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center">
                 <CheckCircle2 size={26} />
               </div>
@@ -109,7 +119,7 @@ export default function BulkRfqModal({
                 <span className="text-xs font-bold text-[#0D9488] tracking-wider uppercase">
                   Verified Quotation Brief Logged
                 </span>
-                <h4 className="font-heading font-extrabold text-xl text-[#0A1F44] mt-1">
+                <h4 className="font-heading font-extrabold text-xl text-[#0F172A] mt-1">
                   {submittedRfqNumber}
                 </h4>
               </div>
@@ -140,7 +150,7 @@ export default function BulkRfqModal({
             <button
               type="button"
               onClick={handleResetAndClose}
-              className="w-full py-3 rounded-xl bg-[#0A1F44] text-white font-bold text-sm hover:bg-[#00081E] transition-colors"
+              className="w-full py-3 rounded-xl bg-[#0B0F19] text-white font-bold text-sm hover:bg-[#030712] transition-colors"
             >
               Done & Return to Marketplace
             </button>
@@ -156,7 +166,7 @@ export default function BulkRfqModal({
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs bg-white focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs bg-white focus:outline-none focus:border-[#FF7A00]"
                 >
                   <option value="Agriculture & Farming">Agriculture & Farming</option>
                   <option value="Electrical & Electronics">Electrical & Electronics</option>
@@ -177,7 +187,7 @@ export default function BulkRfqModal({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Monocrystalline Solar Panels 540W"
-                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
             </div>
@@ -193,7 +203,7 @@ export default function BulkRfqModal({
                   required
                   value={quantity}
                   onChange={(e) => setQuantity(Number(e.target.value))}
-                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -204,7 +214,7 @@ export default function BulkRfqModal({
                 <select
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
-                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs bg-white focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs bg-white focus:outline-none focus:border-[#FF7A00]"
                 >
                   <option value="Units">Units / Pcs</option>
                   <option value="Boxes">Boxes / Cartons</option>
@@ -223,7 +233,7 @@ export default function BulkRfqModal({
                   value={targetPrice}
                   onChange={(e) => setTargetPrice(e.target.value)}
                   placeholder="Optional estimate"
-                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
             </div>
@@ -237,7 +247,7 @@ export default function BulkRfqModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Include mandatory compliance requirements, testing certificates (e.g. BIS/MNRE), packaging preferences, or delivery milestones..."
-                className="w-full p-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                className="w-full p-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
               />
             </div>
 
@@ -252,7 +262,7 @@ export default function BulkRfqModal({
                   value={destinationCity}
                   onChange={(e) => setDestinationCity(e.target.value)}
                   placeholder="e.g. Chennai, Tamil Nadu"
-                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -263,7 +273,7 @@ export default function BulkRfqModal({
                 <select
                   value={requiredDate}
                   onChange={(e) => setRequiredDate(e.target.value)}
-                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs bg-white focus:outline-none focus:border-[#2563EB]"
+                  className="w-full h-10 px-3 border border-[#CBD5E1] rounded-lg text-xs bg-white focus:outline-none focus:border-[#FF7A00]"
                 >
                   <option value="Immediate (24-48h)">Immediate (24-48h)</option>
                   <option value="Within 7 Days">Within 7 Days</option>
@@ -274,7 +284,7 @@ export default function BulkRfqModal({
             </div>
 
             <div className="pt-2 border-t border-[#CBD5E1]">
-              <span className="text-[11px] font-bold text-[#0051D5] tracking-wider uppercase block mb-2">
+              <span className="text-[11px] font-bold text-[#FF7A00] tracking-wider uppercase block mb-2">
                 Purchasing Entity Contact Details
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -322,7 +332,7 @@ export default function BulkRfqModal({
               <button
                 type="submit"
                 disabled={createRfqMutation.isPending}
-                className="px-6 py-2.5 bg-[#F59E0B] text-[#0F172A] rounded-xl text-xs font-bold hover:bg-[#D97706] transition-all flex items-center gap-2 shadow-sm disabled:opacity-60"
+                className="px-6 py-2.5 bg-[#FF7A00] text-white rounded-xl text-xs font-bold hover:bg-[#E06B00] transition-all flex items-center gap-2 shadow-sm disabled:opacity-60"
               >
                 <span className="text-[#0F172A] font-bold">
                   {createRfqMutation.isPending ? "Submitting Brief..." : "Submit Commercial RFQ"}

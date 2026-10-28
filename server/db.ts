@@ -15,6 +15,7 @@ import {
   NetworkConnection,
   ServiceEnquiry,
   EnterpriseApplication,
+  Notification,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import {
@@ -54,41 +55,21 @@ interface LocalStore {
   networkConnections: NetworkConnection[];
   serviceEnquiries: ServiceEnquiry[];
   enterpriseApplications: EnterpriseApplication[];
+  notifications: Notification[];
 }
 
-const DATA_DIR = path.resolve(process.cwd(), "server", "data");
-const STORE_FILE = path.join(DATA_DIR, "marketplace-store.json");
+const BUNDLED_DATA_DIR = path.resolve(process.cwd(), "server", "data");
+const BUNDLED_STORE_FILE = path.join(BUNDLED_DATA_DIR, "marketplace-store.json");
+const DATA_DIR = process.env.VERCEL
+  ? path.join("/tmp", "server-data")
+  : BUNDLED_DATA_DIR;
+const STORE_FILE = process.env.VERCEL
+  ? path.join(DATA_DIR, "marketplace-store.json")
+  : BUNDLED_STORE_FILE;
 
 function createInitialStore(): LocalStore {
   const now = new Date();
-  const initialProducts: Product[] = INITIAL_PRODUCTS.map((p) => ({
-    id: p.id,
-    title: p.title,
-    slug: p.slug,
-    department: p.department,
-    categoryId: p.categoryId,
-    supplierId: 1,
-    supplierName: p.supplierName,
-    price: p.price,
-    mrp: p.mrp,
-    discount: p.discount,
-    moq: p.moq,
-    inStock: p.inStock,
-    rating: p.rating,
-    reviews: p.reviews,
-    sku: p.sku,
-    badge: p.badge,
-    badgeColor: p.badgeColor,
-    imageAlt: p.imageAlt,
-    imageUrl: p.imageUrl,
-    specs: p.specs,
-    leadTime: p.leadTime,
-    origin: p.origin,
-    hsnCode: p.hsnCode,
-    isPublished: p.isPublished,
-    createdAt: now,
-    updatedAt: now,
-  }));
+  const initialProducts: Product[] = [];
 
   const initialCategories: Category[] = INITIAL_CATEGORIES.map((c) => ({
     id: c.id,
@@ -97,7 +78,7 @@ function createInitialStore(): LocalStore {
     department: c.department,
     icon: c.icon,
     description: c.description,
-    itemCount: c.itemCount,
+    itemCount: "No listings yet",
     displayOrder: c.displayOrder,
     createdAt: now,
   }));
@@ -185,6 +166,7 @@ function createInitialStore(): LocalStore {
     networkConnections: [],
     serviceEnquiries: [],
     enterpriseApplications: [],
+    notifications: [],
   };
 }
 
@@ -198,8 +180,16 @@ function initLocalStore(): LocalStore {
     if (fs.existsSync(STORE_FILE)) {
       const content = fs.readFileSync(STORE_FILE, "utf-8");
       const parsed = JSON.parse(content);
-      // Re-hydrate dates
-      if (parsed && Array.isArray(parsed.products) && parsed.products.length > 0) {
+      if (parsed && Array.isArray(parsed.products)) {
+        parsed.notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
+        return parsed;
+      }
+    } else if (fs.existsSync(BUNDLED_STORE_FILE)) {
+      const content = fs.readFileSync(BUNDLED_STORE_FILE, "utf-8");
+      const parsed = JSON.parse(content);
+      if (parsed && Array.isArray(parsed.products)) {
+        parsed.notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
+        saveLocalStore(parsed);
         return parsed;
       }
     }
@@ -238,7 +228,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     try {
       const values: InsertUser = { openId: user.openId };
       const updateSet: Record<string, unknown> = {};
-      const fields = ["name", "email", "loginMethod", "phone", "companyName", "gstNumber", "address", "city", "state"] as const;
+      const fields = ["name", "email", "loginMethod", "phone", "companyName", "gstNumber", "address", "city", "state", "passwordHash"] as const;
       for (const f of fields) {
         if (user[f] !== undefined) {
           (values as any)[f] = user[f] ?? null;
@@ -248,6 +238,10 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       if (user.role) {
         values.role = user.role;
         updateSet.role = user.role;
+      }
+      if (user.isVerified !== undefined) {
+        values.isVerified = user.isVerified;
+        updateSet.isVerified = user.isVerified;
       }
       values.lastSignedIn = user.lastSignedIn ?? new Date();
       updateSet.lastSignedIn = values.lastSignedIn;
@@ -273,6 +267,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       city: user.city ?? localStore.users[idx].city,
       state: user.state ?? localStore.users[idx].state,
       role: user.role ?? localStore.users[idx].role,
+      passwordHash: user.passwordHash !== undefined ? (user.passwordHash ?? null) : localStore.users[idx].passwordHash,
+      isVerified: user.isVerified !== undefined ? user.isVerified : localStore.users[idx].isVerified,
       lastSignedIn: now,
       updatedAt: now,
     };
@@ -290,7 +286,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       state: user.state ?? null,
       loginMethod: user.loginMethod ?? "credentials",
       role: user.role ?? (user.openId === ENV.ownerOpenId ? "admin" : "buyer"),
-      isVerified: true,
+      isVerified: user.isVerified ?? false,
       passwordHash: user.passwordHash ?? null,
       createdAt: now,
       updatedAt: now,
@@ -330,11 +326,28 @@ export async function listUsers(): Promise<User[]> {
 // Category Operations
 // -------------------------------------------------------------
 export async function listCategories(): Promise<Category[]> {
-  return localStore.categories.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  const sorted = [...localStore.categories].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  return sorted.map((c) => {
+    const count = localStore.products.filter(
+      (p) => p.isPublished && (p.categoryId === c.id || p.department.toLowerCase() === c.name.toLowerCase())
+    ).length;
+    return {
+      ...c,
+      itemCount: count > 0 ? `${count} ${count === 1 ? "Product" : "Products"}` : "No listings yet",
+    };
+  });
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
-  return localStore.categories.find((c) => c.slug === slug);
+  const cat = localStore.categories.find((c) => c.slug === slug);
+  if (!cat) return undefined;
+  const count = localStore.products.filter(
+    (p) => p.isPublished && (p.categoryId === cat.id || p.department.toLowerCase() === cat.name.toLowerCase())
+  ).length;
+  return {
+    ...cat,
+    itemCount: count > 0 ? `${count} ${count === 1 ? "Product" : "Products"}` : "No listings yet",
+  };
 }
 
 // -------------------------------------------------------------
@@ -346,10 +359,21 @@ export interface ProductFilterParams {
   query?: string;
   sort?: "relevance" | "price_asc" | "price_desc" | "rating" | "newest";
   inStockOnly?: boolean;
+  includeUnpublished?: boolean;
+  supplierId?: number;
 }
 
 export async function listProducts(params: ProductFilterParams = {}): Promise<Product[]> {
-  let list = localStore.products.filter((p) => p.isPublished);
+  let list = localStore.products;
+
+  // By default, filter out unpublished products unless explicitly requested (e.g. supplier workspace)
+  if (!params.includeUnpublished) {
+    list = list.filter((p) => p.isPublished);
+  }
+
+  if (params.supplierId !== undefined) {
+    list = list.filter((p) => p.supplierId === params.supplierId);
+  }
 
   if (params.department && params.department !== "All Products" && params.department !== "all") {
     list = list.filter((p) => p.department.toLowerCase() === params.department?.toLowerCase());
@@ -398,8 +422,40 @@ export async function getProductById(id: string): Promise<Product | undefined> {
   return localStore.products.find((p) => p.id === id);
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | undefined> {
-  return localStore.products.find((p) => p.slug === slug);
+export async function getProductBySlug(
+  slug: string,
+  allowedSupplierId?: number,
+  isAdmin?: boolean,
+  allowedCompanyName?: string | null
+): Promise<(Product & { supplier?: Partial<User> }) | undefined> {
+  const product = localStore.products.find((p) => p.slug === slug);
+  if (!product) return undefined;
+  // Unpublished products are only accessible to their owner supplier or platform admin
+  if (!product.isPublished && !isAdmin) {
+    const isOwner =
+      (allowedSupplierId !== undefined && product.supplierId === allowedSupplierId) ||
+      (Boolean(allowedCompanyName) && product.supplierName?.toLowerCase() === allowedCompanyName?.toLowerCase());
+    if (!isOwner) {
+      return undefined;
+    }
+  }
+  const supplier = product.supplierId ? localStore.users.find((u) => u.id === product.supplierId) : undefined;
+  return {
+    ...product,
+    supplier: supplier
+      ? {
+          id: supplier.id,
+          name: supplier.name,
+          companyName: supplier.companyName,
+          city: supplier.city,
+          state: supplier.state,
+          isVerified: Boolean(supplier.isVerified),
+          gstNumber: supplier.gstNumber,
+          phone: supplier.phone,
+          email: supplier.email,
+        }
+      : undefined,
+  };
 }
 
 export async function createProduct(input: Omit<Product, "createdAt" | "updatedAt">): Promise<Product> {
@@ -465,6 +521,19 @@ export async function createRfq(input: Omit<Rfq, "id" | "rfqNumber" | "status" |
 
   localStore.rfqs.unshift(newRfq);
   saveLocalStore(localStore);
+
+  // Notify registered sellers about the new RFQ
+  const sellers = localStore.users.filter((u) => u.role === "seller");
+  for (const s of sellers) {
+    createNotification({
+      userId: s.id,
+      title: "New RFQ Received",
+      message: `${newRfq.buyerName} requested quote for ${newRfq.quantity} ${newRfq.unit} of "${newRfq.title}"`,
+      type: "rfq",
+      link: "/workspace",
+    }).catch(() => {});
+  }
+
   return newRfq;
 }
 
@@ -518,6 +587,19 @@ export async function createQuote(input: Omit<Quote, "id" | "quoteNumber" | "sta
   // Also update rfq status
   await updateRfqStatus(input.rfqId, "quoted");
   saveLocalStore(localStore);
+
+  // Notify buyer who created the RFQ
+  const targetRfq = localStore.rfqs.find((r) => r.id === input.rfqId);
+  if (targetRfq?.buyerId) {
+    createNotification({
+      userId: targetRfq.buyerId,
+      title: "Quotation Received",
+      message: `${newQuote.supplierName} submitted quotation ${newQuote.quoteNumber} (₹${newQuote.totalAmount}) for RFQ ${targetRfq.rfqNumber}`,
+      type: "quote",
+      link: "/workspace",
+    }).catch(() => {});
+  }
+
   return newQuote;
 }
 
@@ -535,9 +617,107 @@ export async function updateQuoteStatus(id: string, status: "pending" | "accepte
   quote.status = status;
   if (status === "accepted") {
     await updateRfqStatus(quote.rfqId, "accepted");
+    if (quote.supplierId) {
+      createNotification({
+        userId: quote.supplierId,
+        title: "Quotation Accepted!",
+        message: `Your quotation ${quote.quoteNumber} has been accepted by the buyer.`,
+        type: "quote",
+        link: "/workspace",
+      }).catch(() => {});
+    }
   }
   saveLocalStore(localStore);
   return quote;
+}
+
+export async function listAllQuotes(supplierId?: number): Promise<Quote[]> {
+  if (supplierId) {
+    return localStore.quotes.filter((q) => q.supplierId === supplierId);
+  }
+  return localStore.quotes;
+}
+
+export interface SupplierProfile {
+  id: string | number;
+  name: string;
+  slug: string;
+  email?: string;
+  phone?: string;
+  companyName: string;
+  gstNumber?: string;
+  address?: string;
+  city: string;
+  state: string;
+  isVerified: boolean;
+  departments: string[];
+  productCount: number;
+  rating?: string;
+  badge?: string;
+  description: string;
+  products?: Product[];
+}
+
+export async function listSuppliers(query?: string): Promise<SupplierProfile[]> {
+  const map = new Map<string, SupplierProfile>();
+
+  // Collect exclusively from genuine registered seller users
+  const sellers = localStore.users.filter((u) => u.role === "seller");
+  for (const s of sellers) {
+    const sName = s.companyName || s.name || "Empaneled Supplier";
+    const slug = sName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const prods = localStore.products.filter(
+      (p) => p.isPublished && (p.supplierId === s.id || (p.supplierName && p.supplierName.toLowerCase() === sName.toLowerCase()))
+    );
+    const depts = Array.from(new Set(prods.map((p) => p.department)));
+
+    map.set(slug, {
+      id: s.id,
+      name: s.name || sName,
+      slug,
+      email: s.email || undefined,
+      phone: s.phone || undefined,
+      companyName: sName,
+      gstNumber: s.gstNumber || undefined,
+      address: s.address || undefined,
+      city: s.city || "India",
+      state: s.state || "",
+      isVerified: Boolean(s.isVerified),
+      departments: depts.length ? depts : ["Industrial & Commercial Supply"],
+      productCount: prods.length,
+      rating: undefined, // Only display genuine database ratings
+      badge: s.isVerified ? "Verified Supplier" : "Registered Supplier",
+      description: s.companyName
+        ? `${sName} is an empaneled wholesale supplier on BazroKart offering trade supply and B2B ordering.`
+        : "Registered supplier on the BazroKart wholesale marketplace.",
+    });
+  }
+
+  let list = Array.from(map.values());
+  if (query) {
+    const q = query.toLowerCase();
+    list = list.filter(
+      (s) =>
+        s.companyName.toLowerCase().includes(q) ||
+        s.city.toLowerCase().includes(q) ||
+        s.departments.some((d) => d.toLowerCase().includes(q))
+    );
+  }
+  return list;
+}
+
+export async function getSupplierBySlug(slug: string): Promise<SupplierProfile | undefined> {
+  const all = await listSuppliers();
+  const normalized = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const supplier = all.find((s) => s.slug === normalized || String(s.id) === slug);
+  if (!supplier) return undefined;
+  const prods = localStore.products.filter(
+    (p) =>
+      p.isPublished &&
+      (p.supplierId === supplier.id ||
+        (p.supplierName && p.supplierName.toLowerCase() === supplier.companyName.toLowerCase()))
+  );
+  return { ...supplier, products: prods };
 }
 
 // -------------------------------------------------------------
@@ -568,6 +748,26 @@ export async function createOrder(input: Omit<Order, "id" | "orderNumber" | "cre
 
   localStore.orders.unshift(newOrder);
   saveLocalStore(localStore);
+
+  if (newOrder.buyerId) {
+    createNotification({
+      userId: newOrder.buyerId,
+      title: "Order Placed",
+      message: `Purchase order ${newOrder.orderNumber} (₹${newOrder.totalAmount}) placed successfully.`,
+      type: "order",
+      link: "/workspace",
+    }).catch(() => {});
+  }
+  if (newOrder.supplierId) {
+    createNotification({
+      userId: newOrder.supplierId,
+      title: "New Purchase Order",
+      message: `New Order ${newOrder.orderNumber} received from ${newOrder.buyerName}.`,
+      type: "order",
+      link: "/workspace",
+    }).catch(() => {});
+  }
+
   return newOrder;
 }
 
@@ -713,3 +913,49 @@ export async function getAdminStats() {
     pendingVerifications: localStore.users.filter((u) => !u.isVerified).length,
   };
 }
+
+// -------------------------------------------------------------
+// Notification Operations
+// -------------------------------------------------------------
+export async function createNotification(input: {
+  userId: number;
+  title: string;
+  message: string;
+  type?: "rfq" | "quote" | "order" | "system";
+  link?: string;
+}): Promise<Notification> {
+  const notif: Notification = {
+    id: `notif_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+    userId: input.userId,
+    title: input.title,
+    message: input.message,
+    type: input.type || "system",
+    link: input.link || null,
+    isRead: false,
+    createdAt: new Date(),
+  };
+  localStore.notifications = localStore.notifications || [];
+  localStore.notifications.unshift(notif);
+  saveLocalStore(localStore);
+  return notif;
+}
+
+export async function listNotifications(userId: number): Promise<Notification[]> {
+  localStore.notifications = localStore.notifications || [];
+  return localStore.notifications.filter((n) => n.userId === userId);
+}
+
+export async function markNotificationAsRead(id: string, userId: number): Promise<boolean> {
+  localStore.notifications = localStore.notifications || [];
+  const notif = localStore.notifications.find((n) => n.id === id && n.userId === userId);
+  if (!notif) return false;
+  notif.isRead = true;
+  saveLocalStore(localStore);
+  return true;
+}
+
+export async function getUnreadNotificationsCount(userId: number): Promise<number> {
+  localStore.notifications = localStore.notifications || [];
+  return localStore.notifications.filter((n) => n.userId === userId && !n.isRead).length;
+}
+

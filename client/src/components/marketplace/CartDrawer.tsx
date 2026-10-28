@@ -41,18 +41,18 @@ export default function CartDrawer({
     <div className="fixed inset-0 z-50 overflow-hidden animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[#00081E]/60 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-[#030712]/70 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Drawer Panel */}
       <div className="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col z-50 transform transition-transform duration-300 ease-in-out">
         {/* Header */}
-        <div className="p-4 sm:p-5 bg-[#0A1F44] text-white flex items-center justify-between">
+        <div className="p-4 sm:p-5 bg-[#0B0F19] text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <ShoppingCart size={20} className="text-[#F59E0B]" />
+            <ShoppingCart size={20} className="text-[#FF7A00]" />
             <span className="font-heading font-bold text-lg">Procurement Cart</span>
-            <span className="bg-[#2563EB] px-2.5 py-0.5 rounded-full text-xs font-bold tabular-nums">
+            <span className="bg-[#FF7A00] px-2.5 py-0.5 rounded-full text-xs font-bold tabular-nums text-white">
               {totalUnits} items
             </span>
           </div>
@@ -66,18 +66,18 @@ export default function CartDrawer({
         </div>
 
         {/* Free Shipping Tier Banner */}
-        <div className="p-3.5 bg-[#F2F3FF] border-b border-[#CBD5E1]">
+        <div className="p-3.5 bg-orange-50/50 border-b border-[#CBD5E1]">
           <div className="flex justify-between items-center mb-1 text-xs">
             <span className="text-[#44464E] font-medium">Pan-India Direct Logistics</span>
-            <span className="text-[#2563EB] font-bold">
+            <span className="text-[#FF7A00] font-bold">
               {diffToFree > 0
                 ? `₹${diffToFree.toLocaleString("en-IN")} more for Free Dispatch`
                 : "Free Commercial Freight Unlocked!"}
             </span>
           </div>
-          <div className="w-full bg-[#EAEDFF] h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
             <div
-              className="bg-[#2563EB] h-full rounded-full transition-all duration-500"
+              className="bg-[#FF7A00] h-full rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -103,7 +103,7 @@ export default function CartDrawer({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-bold text-[#0A1F44] truncate">
+                    <h4 className="text-xs font-bold text-[#0F172A] truncate">
                       {item.product.title}
                     </h4>
                     <div className="text-[11px] text-slate-500 font-mono mt-0.5">
@@ -111,7 +111,7 @@ export default function CartDrawer({
                     </div>
 
                     <div className="flex items-center justify-between mt-2">
-                      <div className="text-xs font-bold text-[#0A1F44]">
+                      <div className="text-xs font-bold text-[#0F172A]">
                         ₹{(price * item.quantity).toLocaleString("en-IN")}
                         <span className="text-[10px] font-normal text-slate-400 block">
                           (₹{price.toLocaleString("en-IN")} / unit)
@@ -181,9 +181,9 @@ export default function CartDrawer({
                   +₹{gstAmount.toLocaleString("en-IN")}
                 </span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-slate-200 text-sm font-body font-semibold text-[#0A1F44]">
+              <div className="flex justify-between pt-2 border-t border-slate-200 text-sm font-body font-semibold text-[#0F172A]">
                 <span>Total Payable:</span>
-                <span className="text-base text-[#0A1F44] font-body font-semibold tabular-nums">
+                <span className="text-base text-[#0F172A] font-body font-semibold tabular-nums">
                   ₹{totalPayable.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -193,7 +193,7 @@ export default function CartDrawer({
               <button
                 type="button"
                 onClick={onOpenGstInvoice}
-                className="py-2.5 px-2 border border-[#CBD5E1] rounded-xl text-xs font-heading font-semibold text-[#0A1F44] hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors tracking-[-0.01em]"
+                className="py-2.5 px-2 border border-[#CBD5E1] rounded-xl text-xs font-heading font-semibold text-[#0F172A] hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors tracking-[-0.01em]"
               >
                 <FileCheck size={14} className="text-[#0D9488]" />
                 <span className="text-[#0A1F44] font-semibold">View GST Invoice</span>
@@ -201,7 +201,7 @@ export default function CartDrawer({
               <button
                 type="button"
                 onClick={onProceedCheckout}
-                className="py-2.5 px-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A1F44] rounded-xl text-xs font-heading font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm tracking-[-0.01em]"
+                className="py-2.5 px-3 bg-[#FF7A00] hover:bg-[#EA580C] text-white rounded-xl text-xs font-heading font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm tracking-[-0.01em]"
               >
                 <span className="text-[#0A1F44] font-bold">Checkout</span>
                 <ArrowRight size={14} className="text-[#0A1F44]" />
