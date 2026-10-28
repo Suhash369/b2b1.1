@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Building, ArrowRight, ShieldCheck, UserCheck } from "lucide-react";
+import { Building, ArrowRight, ShieldCheck, UserCheck, Eye, EyeOff } from "lucide-react";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
 
@@ -15,6 +15,7 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [gstNumber, setGstNumber] = useState("");
@@ -59,6 +60,9 @@ export default function Register() {
       <main className="flex-1 pt-24 sm:pt-28 pb-16 flex items-center justify-center p-4">
         <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-[#E2E8F0] p-8 space-y-6">
           <div className="text-center space-y-2">
+            <div className="flex justify-center mb-1">
+              <img src="/bazrokart-logo.png" alt="BazroKart Logo" className="h-16 w-auto object-contain" />
+            </div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#FF7A00]">
               Verified Trade Onboarding
             </span>
@@ -102,7 +106,7 @@ export default function Register() {
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="e.g. Tirupur Apparel Matrix"
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full h-10 pl-3 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -127,7 +131,7 @@ export default function Register() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Ramesh Kumar"
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full h-10 pl-3 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -139,34 +143,46 @@ export default function Register() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98401 22334"
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full h-10 pl-3 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-800 mb-1">Corporate Email Address</label>
+              <label className="block font-semibold text-slate-800 mb-1">
+                {role === "buyer" ? "Email Address" : "Business / Corporate Email Address"}
+              </label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="purchasing@company.in"
-                className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
+                placeholder={role === "buyer" ? "name@example.com" : "purchasing@company.in"}
+                className="w-full h-10 pl-3 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
               />
             </div>
 
             <div>
               <label className="block font-semibold text-slate-800 mb-1">Create Account Password</label>
+              <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimum 6 characters"
-                className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
-              />
+                  className="w-full h-10 pl-3 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -177,7 +193,7 @@ export default function Register() {
                   required
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full h-10 pl-3 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -188,7 +204,7 @@ export default function Register() {
                   required
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full h-10 pl-3 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
             </div>

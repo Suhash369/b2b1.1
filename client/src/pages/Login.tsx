@@ -44,8 +44,8 @@ export default function Login() {
       <main className="flex-1 pt-24 sm:pt-28 pb-16 flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-[#E2E8F0] p-8 space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-12 h-12 mx-auto rounded-xl bg-[#0B0F19] text-[#FF7A00] border border-white/10 flex items-center justify-center font-bold shadow-md">
-              <span className="font-heading text-base font-extrabold">BK</span>
+            <div className="flex justify-center mb-1">
+              <img src="/bazrokart-logo.png" alt="BazroKart Logo" className="h-16 w-auto object-contain" />
             </div>
             <h1 className="font-heading font-extrabold text-[clamp(1.5rem,2.2vw,1.85rem)] text-[#0F172A] tracking-[-0.03em] leading-[1.2] text-balance">
               Sign in to BazroKart
