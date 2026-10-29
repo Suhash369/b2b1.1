@@ -816,6 +816,25 @@
       "createdAt": "2026-10-28T09:52:25.815Z",
       "updatedAt": "2026-10-28T09:52:25.815Z",
       "lastSignedIn": "2026-10-28T09:52:25.815Z"
+    },
+    {
+      "id": 44,
+      "openId": "usr_1793253570242",
+      "name": "Siva N",
+      "email": "siva.prof1793253570180@gmail.com",
+      "phone": "+917305852492",
+      "companyName": "Averon Enterprises",
+      "gstNumber": "12345678910",
+      "address": null,
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "loginMethod": "credentials",
+      "role": "buyer",
+      "isVerified": false,
+      "passwordHash": "06c017f9ddbb030429a077d22f1568d5:a75c6dc9a6aa834a1d9a58ebe9faa7ce7c5025ec67103783cd8b7a53212fb65502f310b2a6d5a1937c11724639eeb4d4471bf05237d01be2899af575a9c7a8f1",
+      "createdAt": "2026-10-29T05:59:30.290Z",
+      "updatedAt": "2026-10-29T05:59:30.290Z",
+      "lastSignedIn": "2026-10-29T05:59:30.290Z"
     }
   ],
   "categories": [
