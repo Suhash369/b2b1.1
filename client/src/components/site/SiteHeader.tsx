@@ -6,7 +6,6 @@ import {
   ChevronDown,
   Menu,
   X,
-  FileText,
   Building,
   Briefcase,
   Layers,
@@ -215,15 +214,6 @@ export default function SiteHeader({
 
           {/* Action Buttons (Cart, RFQ, Account) */}
           <div className="flex items-center gap-2.5">
-            {/* Quick Bulk RFQ Button */}
-            <button
-              type="button"
-              onClick={() => onOpenRfq && onOpenRfq()}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-all"
-            >
-              <FileText size={14} className="text-[#FF7A00]" />
-              <span>Bulk RFQ</span>
-            </button>
 
             {/* Procurement Cart Trigger */}
             <button
