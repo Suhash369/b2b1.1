@@ -935,23 +935,6 @@
   ],
   "networkConnections": [],
   "serviceEnquiries": [],
-  "enterpriseApplications": [
-    {
-      "id": "ent_1793169187854",
-      "enterpriseCategory": "msme",
-      "companyName": "siva7305852@gmail.com",
-      "contactPerson": "siva",
-      "email": "siva1@gmail.com",
-      "phone": "+91 98401 22334",
-      "city": "Chennai",
-      "state": "Tamil Nadu",
-      "businessStage": "Operational (1-3 Years)",
-      "employeeCount": "10-50 Employees",
-      "annualTurnover": "₹1 Cr - ₹5 Cr",
-      "needs": "Empanelment application for siva7305852@gmail.com under msme category.",
-      "status": "submitted",
-      "createdAt": "2026-10-28T06:33:07.854Z"
-    }
-  ],
+  "enterpriseApplications": [],
   "notifications": []
 }

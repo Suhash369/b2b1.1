@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -25,8 +25,20 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
   const [needs, setNeeds] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const { data: user } = trpc.auth.me.useQuery();
   const { data: categories = [] } = trpc.enterprises.listCategories.useQuery();
   const applyMutation = trpc.enterprises.submitApplication.useMutation();
+
+  useEffect(() => {
+    if (user) {
+      if (user.companyName && !companyName) setCompanyName(user.companyName);
+      if (user.name && !contactPerson) setContactPerson(user.name);
+      if (user.email && !email) setEmail(user.email);
+      if (user.phone && !phone) setPhone(user.phone);
+      if (user.city && !city) setCity(user.city);
+      if (user.state && !state) setState(user.state);
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

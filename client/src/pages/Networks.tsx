@@ -115,59 +115,90 @@ export default function Networks({ cartItems = [] }: NetworksProps) {
           </div>
 
           {/* Companies Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCompanies.map((comp) => (
-              <div
-                key={comp.id}
-                className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-[#FF7A00]/40 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-heading font-bold text-base text-[#0F172A]">
-                        {comp.name}
-                      </h3>
-                      <span className="text-xs text-slate-500 block mt-0.5">{comp.category}</span>
-                    </div>
-                    {comp.isVerified && (
-                      <span className="px-2.5 py-0.5 bg-[#0D9488]/10 text-[#0D9488] text-[10px] font-bold rounded-full flex items-center gap-1">
-                        <CheckCircle2 size={12} /> Verified
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs text-slate-700">
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <MapPin size={13} className="text-[#FF7A00] flex-shrink-0" />
-                      <span>{comp.city}</span>
-                    </div>
-                    <div>
-                      <strong className="text-slate-500">GSTIN:</strong>{" "}
-                      <span className="font-mono text-slate-800 font-semibold">{comp.gstin}</span>
-                    </div>
-                    <div className="pt-1 border-t border-slate-200 text-slate-600">
-                      <strong className="text-slate-800">Procurement Focus:</strong>{" "}
-                      <span>{comp.activeRequirements}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Star size={13} className="fill-amber-400 text-amber-400" /> {comp.rating}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenConnect(comp.name)}
-                    className="px-4 py-2 bg-[#0B0F19] hover:bg-[#030712] text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
-                  >
-                    <span>Connect</span>
-                    <Send size={12} />
-                  </button>
-                </div>
+          {filteredCompanies.length === 0 ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center max-w-lg mx-auto space-y-4">
+              <div className="w-12 h-12 mx-auto rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+                <Building size={24} />
               </div>
-            ))}
-          </div>
+              <div>
+                <h3 className="font-heading font-bold text-base text-[#0F172A]">
+                  No Empaneled Entities Listed Yet
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
+                  Verified suppliers and enterprise buyers appear here once registered and approved through the Institutional Empanelment Desk.
+                </p>
+              </div>
+              <div className="pt-2 flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/enterprises"
+                  className="px-4 py-2 bg-[#FF7A00] hover:bg-[#EA580C] text-white rounded-xl text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5"
+                >
+                  <span>Apply for Empanelment</span>
+                  <ExternalLink size={13} />
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 bg-[#0B0F19] hover:bg-[#030712] text-white rounded-xl text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5"
+                >
+                  <span>Register Commercial Entity</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCompanies.map((comp) => (
+                <div
+                  key={comp.id}
+                  className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-[#FF7A00]/40 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-heading font-bold text-base text-[#0F172A]">
+                          {comp.name}
+                        </h3>
+                        <span className="text-xs text-slate-500 block mt-0.5">{comp.category}</span>
+                      </div>
+                      {comp.isVerified && (
+                        <span className="px-2.5 py-0.5 bg-[#0D9488]/10 text-[#0D9488] text-[10px] font-bold rounded-full flex items-center gap-1">
+                          <CheckCircle2 size={12} /> Verified
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs text-slate-700">
+                      <div className="flex items-center gap-1.5 text-slate-600">
+                        <MapPin size={13} className="text-[#FF7A00] flex-shrink-0" />
+                        <span>{comp.city}</span>
+                      </div>
+                      <div>
+                        <strong className="text-slate-500">GSTIN:</strong>{" "}
+                        <span className="font-mono text-slate-800 font-semibold">{comp.gstin}</span>
+                      </div>
+                      <div className="pt-1 border-t border-slate-200 text-slate-600">
+                        <strong className="text-slate-800">Procurement Focus:</strong>{" "}
+                        <span>{comp.activeRequirements}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                      <Star size={13} className="fill-amber-400 text-amber-400" /> {comp.rating}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenConnect(comp.name)}
+                      className="px-4 py-2 bg-[#0B0F19] hover:bg-[#030712] text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
+                    >
+                      <span>Connect</span>
+                      <Send size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
 

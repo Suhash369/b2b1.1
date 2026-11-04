@@ -784,8 +784,10 @@ export default function Home({
 
         {/* ========================================================= */}
         {/* SECTION G — BUSINESS NETWORKS                             */}
+        {/* Rendered dynamically once entities are empaneled          */}
         {/* ========================================================= */}
-        <section className="py-16 bg-white border-b border-slate-200" id="networks">
+        {networkCompanies.length > 0 && (
+          <section className="py-16 bg-white border-b border-slate-200" id="networks">
           <div className="shell space-y-10">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
               <div className="max-w-2xl space-y-2">
@@ -850,6 +852,7 @@ export default function Home({
             </div>
           </div>
         </section>
+        )}
 
         {/* ========================================================= */}
         {/* SECTION H — HOW IT WORKS                                  */}

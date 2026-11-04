@@ -54804,58 +54804,6 @@ var SERVICES_LIST = [
     description: "Regional and industry-specific business meetups fostering partnerships, consortium bidding, and cross-enterprise trade."
   }
 ];
-var NETWORK_COMPANIES = [
-  {
-    id: "comp-1",
-    name: "Casagrand Royale Procurement Entity",
-    category: "Real Estate & Infrastructure",
-    city: "Chennai, Tamil Nadu",
-    gstin: "33AAFCB1245P1ZX",
-    isVerified: true,
-    rating: "4.9",
-    activeRequirements: "Solar Street Lights, Submersible Pumps, Construction Hardware"
-  },
-  {
-    id: "comp-2",
-    name: "Tamil Nadu Agro Naturals Cooperative",
-    category: "Agriculture & Organic Inputs",
-    city: "Madurai, Tamil Nadu",
-    gstin: "33AABCT9821K1ZZ",
-    isVerified: true,
-    rating: "4.8",
-    activeRequirements: "Organic Fertilizer Packaging, HDPE Cans, Cold-Pressed Equipment"
-  },
-  {
-    id: "comp-3",
-    name: "Apex Power Systems Private Limited",
-    category: "Electrical Equipment & Switchgear",
-    city: "Chennai, Tamil Nadu",
-    gstin: "33AAACA7112M1ZT",
-    isVerified: true,
-    rating: "4.7",
-    activeRequirements: "18650 Li-ion Cells, Copper Traces, Enclosure Sheet Metal"
-  },
-  {
-    id: "comp-4",
-    name: "SunMatrix Electronics Hub",
-    category: "Renewable Energy & Solar",
-    city: "Bengaluru, Karnataka",
-    gstin: "29AADCS5512N1ZL",
-    isVerified: true,
-    rating: "4.9",
-    activeRequirements: "Monocrystalline Wafers, MPPT Aluminium Enclosures, 4mm Solar Cable"
-  },
-  {
-    id: "comp-5",
-    name: "Tirupur Apparel Matrix",
-    category: "Textiles & Garments",
-    city: "Tirupur, Tamil Nadu",
-    gstin: "33AAXPT4419E1ZM",
-    isVerified: true,
-    rating: "4.8",
-    activeRequirements: "Combed Organic Cotton Yarn 30s, Biodegradable Polybags, Custom Woven Labels"
-  }
-];
 
 // server/db.ts
 var _db = null;
@@ -55487,7 +55435,58 @@ async function getSubscriptionByUserId(userId) {
   return localStore.subscriptions.find((s) => s.userId === userId && s.status === "active");
 }
 async function listNetworkMembers() {
-  return NETWORK_COMPANIES;
+  const members = [];
+  const seenNames = /* @__PURE__ */ new Set();
+  const categoryLabels = {
+    startup: "Startup Innovation Hub",
+    msme: "MSME Manufacturing & Sourcing",
+    social_enterprise: "Social Enterprise & Cooperatives",
+    innovative_business: "Industrial Technology & Systems"
+  };
+  const apps = localStore.enterpriseApplications || [];
+  for (const app2 of apps) {
+    if (!app2.companyName || !app2.companyName.trim()) continue;
+    const norm = app2.companyName.trim().toLowerCase();
+    if (seenNames.has(norm)) continue;
+    seenNames.add(norm);
+    const matchedUser = localStore.users.find(
+      (u) => u.email && app2.email && u.email.trim().toLowerCase() === app2.email.trim().toLowerCase() || u.companyName && u.companyName.trim().toLowerCase() === norm
+    );
+    const gstin = matchedUser?.gstNumber || "Empanelment Registered";
+    const city = app2.city ? app2.state ? `${app2.city}, ${app2.state}` : app2.city : "Pan-India";
+    members.push({
+      id: app2.id,
+      name: app2.companyName.trim(),
+      category: categoryLabels[app2.enterpriseCategory] || "Enterprise Partner Network",
+      city,
+      gstin,
+      isVerified: true,
+      rating: "4.9",
+      activeRequirements: app2.needs || "Direct Sourcing & Verified Supply Agreements"
+    });
+  }
+  const registeredCommercial = localStore.users.filter(
+    (u) => u.companyName && u.companyName.trim().length > 0 && !seenNames.has(u.companyName.trim().toLowerCase()) && (u.role === "seller" || u.role === "buyer") && apps.some(
+      (app2) => app2.email && u.email && app2.email.trim().toLowerCase() === u.email.trim().toLowerCase() || app2.companyName && app2.companyName.trim().toLowerCase() === u.companyName?.trim().toLowerCase()
+    )
+  );
+  for (const u of registeredCommercial) {
+    const norm = u.companyName.trim().toLowerCase();
+    if (seenNames.has(norm)) continue;
+    seenNames.add(norm);
+    const city = u.city ? u.state ? `${u.city}, ${u.state}` : u.city : "Pan-India";
+    members.push({
+      id: `usr-ent-${u.id}`,
+      name: u.companyName.trim(),
+      category: u.role === "seller" ? "Empaneled Manufacturer & Supplier" : "Empaneled Procurement Entity",
+      city,
+      gstin: u.gstNumber || "GST Verified",
+      isVerified: true,
+      rating: "5.0",
+      activeRequirements: u.role === "seller" ? "OEM Production Lots & Commercial Dispatches" : "High-Volume Factory Procurement"
+    });
+  }
+  return members;
 }
 async function createNetworkConnection(input) {
   const conn = {

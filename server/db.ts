@@ -826,8 +826,91 @@ export async function getSubscriptionByUserId(userId: number): Promise<Subscript
 // -------------------------------------------------------------
 // Business Networks
 // -------------------------------------------------------------
-export async function listNetworkMembers() {
-  return NETWORK_COMPANIES;
+export interface NetworkMember {
+  id: string;
+  name: string;
+  category: string;
+  city: string;
+  gstin: string;
+  isVerified: boolean;
+  rating: string;
+  activeRequirements: string;
+}
+
+export async function listNetworkMembers(): Promise<NetworkMember[]> {
+  const members: NetworkMember[] = [];
+  const seenNames = new Set<string>();
+
+  const categoryLabels: Record<string, string> = {
+    startup: "Startup Innovation Hub",
+    msme: "MSME Manufacturing & Sourcing",
+    social_enterprise: "Social Enterprise & Cooperatives",
+    innovative_business: "Industrial Technology & Systems",
+  };
+
+  // 1. Entities from Enterprise Empanelment Applications
+  const apps = localStore.enterpriseApplications || [];
+  for (const app of apps) {
+    if (!app.companyName || !app.companyName.trim()) continue;
+    const norm = app.companyName.trim().toLowerCase();
+    if (seenNames.has(norm)) continue;
+    seenNames.add(norm);
+
+    // Look up if user registered with matching email or company name
+    const matchedUser = localStore.users.find(
+      (u) =>
+        (u.email && app.email && u.email.trim().toLowerCase() === app.email.trim().toLowerCase()) ||
+        (u.companyName && u.companyName.trim().toLowerCase() === norm)
+    );
+
+    const gstin = matchedUser?.gstNumber || "Empanelment Registered";
+    const city = app.city ? (app.state ? `${app.city}, ${app.state}` : app.city) : "Pan-India";
+
+    members.push({
+      id: app.id,
+      name: app.companyName.trim(),
+      category: categoryLabels[app.enterpriseCategory] || "Enterprise Partner Network",
+      city,
+      gstin,
+      isVerified: true,
+      rating: "4.9",
+      activeRequirements: app.needs || "Direct Sourcing & Verified Supply Agreements",
+    });
+  }
+
+  // 2. Commercial entities (buyers/sellers) who registered and applied for empanelment
+  const registeredCommercial = localStore.users.filter(
+    (u) =>
+      u.companyName &&
+      u.companyName.trim().length > 0 &&
+      !seenNames.has(u.companyName.trim().toLowerCase()) &&
+      (u.role === "seller" || u.role === "buyer") &&
+      apps.some(
+        (app) =>
+          (app.email && u.email && app.email.trim().toLowerCase() === u.email.trim().toLowerCase()) ||
+          (app.companyName && app.companyName.trim().toLowerCase() === u.companyName?.trim().toLowerCase())
+      )
+  );
+
+  for (const u of registeredCommercial) {
+    const norm = u.companyName!.trim().toLowerCase();
+    if (seenNames.has(norm)) continue;
+    seenNames.add(norm);
+
+    const city = u.city ? (u.state ? `${u.city}, ${u.state}` : u.city) : "Pan-India";
+    members.push({
+      id: `usr-ent-${u.id}`,
+      name: u.companyName!.trim(),
+      category: u.role === "seller" ? "Empaneled Manufacturer & Supplier" : "Empaneled Procurement Entity",
+      city,
+      gstin: u.gstNumber || "GST Verified",
+      isVerified: true,
+      rating: "5.0",
+      activeRequirements: u.role === "seller" ? "OEM Production Lots & Commercial Dispatches" : "High-Volume Factory Procurement",
+    });
+  }
+
+  return members;
 }
 
 export async function createNetworkConnection(input: Omit<NetworkConnection, "id" | "status" | "createdAt">): Promise<NetworkConnection> {
