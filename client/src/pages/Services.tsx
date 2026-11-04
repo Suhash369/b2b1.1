@@ -1,20 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
-  Handshake,
-  Landmark,
-  GraduationCap,
-  Rocket,
+  Store,
   TrendingUp,
-  Megaphone,
-  BrainCircuit,
-  Share2,
+  Lightbulb,
+  Landmark,
+  Users,
+  GraduationCap,
   CheckCircle2,
   X,
   ArrowRight,
   ShieldCheck,
+  Check,
 } from "lucide-react";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
@@ -33,8 +32,18 @@ export default function Services({ cartItems = [] }: ServicesProps) {
   const [message, setMessage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const { data: user } = trpc.auth.me.useQuery();
   const { data: services = [] } = trpc.services.list.useQuery();
   const submitEnquiryMutation = trpc.services.submitEnquiry.useMutation();
+
+  useEffect(() => {
+    if (user) {
+      if (user.name && !userName) setUserName(user.name);
+      if (user.email && !userEmail) setUserEmail(user.email);
+      if (user.phone && !userPhone) setUserPhone(user.phone);
+      if (user.companyName && !companyName) setCompanyName(user.companyName);
+    }
+  }, [user]);
 
   const handleOpenEnquiry = (serviceName: string) => {
     setSelectedService(serviceName);
@@ -61,14 +70,12 @@ export default function Services({ cartItems = [] }: ServicesProps) {
   };
 
   const serviceIcons: Record<string, React.ReactNode> = {
-    b2b_connect: <Handshake size={24} className="text-[#FF7A00]" />,
-    grants_funding: <Landmark size={24} className="text-[#0D9488]" />,
-    education_training: <GraduationCap size={24} className="text-[#FF7A00]" />,
-    incubation: <Rocket size={24} className="text-[#FF7A00]" />,
-    investor_connect: <TrendingUp size={24} className="text-[#FF7A00]" />,
-    marketing_branding: <Megaphone size={24} className="text-[#0D9488]" />,
-    mentoring: <BrainCircuit size={24} className="text-[#FF7A00]" />,
-    networking: <Share2 size={24} className="text-[#FF7A00]" />,
+    marketplace_sourcing: <Store size={26} className="text-[#FF7A00]" />,
+    market_technology_trends: <TrendingUp size={26} className="text-[#0D9488]" />,
+    rd_product_innovation: <Lightbulb size={26} className="text-[#FF7A00]" />,
+    government_grant_funding: <Landmark size={26} className="text-[#0D9488]" />,
+    professional_staffing: <Users size={26} className="text-[#FF7A00]" />,
+    skill_development_training: <GraduationCap size={26} className="text-[#0D9488]" />,
   };
 
   return (
@@ -83,43 +90,67 @@ export default function Services({ cartItems = [] }: ServicesProps) {
               <ShieldCheck size={14} /> BazroKart Value-Added Services
             </div>
             <h1 className="font-heading font-extrabold text-[clamp(2rem,3.4vw,2.75rem)] text-white tracking-[-0.035em] leading-[1.12] text-balance">
-              Commercial Trade Services &amp; Advisory
+              Industrial &amp; Trade Enablement Services
             </h1>
             <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Accelerate your wholesale operations with verified matchmaking, MSME grant advisory, GST training, and vendor showcases backed by BazroKart Private Limited.
+              Accelerate manufacturing operations with market intelligence, technology upgradation, R&amp;D innovation, government funding advisory, professional staffing, and workforce upskilling.
             </p>
           </div>
         </div>
 
         {/* Services Grid */}
-        <div className="shell py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((svc) => (
+        <div className="shell py-12 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {services.map((svc: any) => (
               <div
                 key={svc.id}
-                className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-[#FF7A00]/40 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 hover:border-[#FF7A00]/40 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-5"
               >
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                    {serviceIcons[svc.id] || <Handshake size={24} className="text-[#FF7A00]" />}
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                      {serviceIcons[svc.id] || <Store size={26} className="text-[#FF7A00]" />}
+                    </div>
+                    {svc.tagline && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF7A00] bg-orange-50 px-2.5 py-1 rounded-md border border-orange-100 text-right leading-tight">
+                        {svc.tagline}
+                      </span>
+                    )}
                   </div>
 
-                  <h3 className="font-heading font-bold text-base text-[#0F172A]">
-                    {svc.name}
-                  </h3>
+                  <div>
+                    <h3 className="font-heading font-bold text-lg text-[#0F172A] leading-snug">
+                      {svc.name}
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                      {svc.description}
+                    </p>
+                  </div>
 
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {svc.description}
-                  </p>
+                  {Array.isArray(svc.highlights) && svc.highlights.length > 0 && (
+                    <div className="pt-3 border-t border-slate-100 space-y-2">
+                      <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider block">
+                        Key Capabilities &amp; Support
+                      </span>
+                      <ul className="space-y-2 text-xs text-slate-600">
+                        {svc.highlights.map((item: string, idx: number) => (
+                          <li key={idx} className="flex items-start gap-2 leading-relaxed">
+                            <Check size={14} className="text-[#0D9488] flex-shrink-0 mt-0.5" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
-                <div className="pt-3 border-t border-slate-100">
+                <div className="pt-4 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => handleOpenEnquiry(svc.name)}
-                    className="w-full py-2.5 rounded-xl bg-[#0B0F19] hover:bg-[#030712] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-xl bg-[#0B0F19] hover:bg-[#030712] text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs"
                   >
-                    <span>Request Advisory</span>
+                    <span>Request Advisory &amp; Consultation</span>
                     <ArrowRight size={13} />
                   </button>
                 </div>
@@ -136,7 +167,7 @@ export default function Services({ cartItems = [] }: ServicesProps) {
             <div className="p-5 bg-[#0B0F19] text-white flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-bold text-base text-white">
-                  Service Enquiry
+                  Service Advisory Enquiry
                 </h3>
                 <p className="text-[11px] text-[#CBD5E1]">{selectedService}</p>
               </div>
@@ -155,77 +186,77 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                   <CheckCircle2 size={28} />
                 </div>
                 <h4 className="font-heading font-bold text-lg text-slate-800">
-                  Enquiry Logged Successfully
+                  Enquiry Submitted Successfully
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Our corporate services team will contact {contactPersonSummary(userName, companyName)} with dedicated advisory details.
+                  Our industrial advisory desk will review your requirements for <strong>{selectedService}</strong> and connect with your representative within 24 business hours.
                 </p>
                 <button
                   type="button"
                   onClick={() => setSelectedService(null)}
                   className="px-6 py-2.5 bg-[#0B0F19] text-white rounded-xl text-xs font-bold"
                 >
-                  Close
+                  Done
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="p-6 space-y-3.5 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-800 mb-1">Company / Organization</label>
+                  <label className="block font-semibold text-slate-800 mb-1">Company / Entity Name</label>
                   <input
                     type="text"
                     required
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="e.g. Casagrand Procurement Desk"
+                    placeholder="e.g. Averon Precision Components"
                     className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-800 mb-1">Your Name</label>
+                    <label className="block font-semibold text-slate-800 mb-1">Contact Person</label>
                     <input
                       type="text"
                       required
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
-                      placeholder="e.g. R. Subramanian"
+                      placeholder="e.g. S. Kumar"
                       className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-800 mb-1">Contact Phone</label>
+                    <label className="block font-semibold text-slate-800 mb-1">Phone Number</label>
                     <input
                       type="tel"
                       required
                       value={userPhone}
                       onChange={(e) => setUserPhone(e.target.value)}
-                      placeholder="+91 98401 22334"
+                      placeholder="+91 98765 43210"
                       className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-800 mb-1">Corporate Email</label>
+                  <label className="block font-semibold text-slate-800 mb-1">Corporate Email Address</label>
                   <input
                     type="email"
                     required
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
-                    placeholder="subramanian@company.in"
+                    placeholder="procurement@company.com"
                     className="w-full h-10 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-800 mb-1">Requirements or Specific Objectives</label>
+                  <label className="block font-semibold text-slate-800 mb-1">Brief Your Industrial Requirement</label>
                   <textarea
                     rows={3}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder={`Tell us what specific help your business needs regarding ${selectedService}...`}
+                    placeholder="Specify your operational goals, staffing needs, technology bottlenecks, or grant assistance required..."
                     className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
@@ -241,9 +272,9 @@ export default function Services({ cartItems = [] }: ServicesProps) {
                   <button
                     type="submit"
                     disabled={submitEnquiryMutation.isPending}
-                    className="px-6 py-2.5 bg-[#FF7A00] text-white rounded-xl font-bold hover:bg-[#EA580C] disabled:opacity-60"
+                    className="px-6 py-2.5 bg-[#FF7A00] text-white rounded-xl font-bold hover:bg-[#EA580C] disabled:opacity-60 flex items-center gap-1.5"
                   >
-                    {submitEnquiryMutation.isPending ? "Submitting..." : "Send Commercial Enquiry"}
+                    <ArrowRight size={13} /> {submitEnquiryMutation.isPending ? "Submitting..." : "Submit Enquiry"}
                   </button>
                 </div>
               </form>
@@ -255,10 +286,4 @@ export default function Services({ cartItems = [] }: ServicesProps) {
       <SiteFooter />
     </div>
   );
-}
-
-function contactPersonSummary(name: string, company: string) {
-  if (name && company) return `${name} at ${company}`;
-  if (name) return name;
-  return "your representative";
 }

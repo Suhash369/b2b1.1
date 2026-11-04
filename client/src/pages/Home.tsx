@@ -748,34 +748,75 @@ export default function Home({
               </Link>
             </div>
 
-            {/* 8 Configured Services Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* 6 Configured Value-Added Services Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { name: "B2B Connect", desc: "Direct matchmaking with verified suppliers for custom requirements." },
-                { name: "Grants & Funding Info", desc: "Curated registry of central/state MSME schemes and subsidized credit." },
-                { name: "Education & Training", desc: "Procurement webinars on GST compliance, HSN rules, and sourcing." },
-                { name: "Incubation Support", desc: "Operational guidance for new manufacturing and retail ventures." },
-                { name: "Investor Connect", desc: "Showcases connecting high-growth supply enterprises with trade capital." },
-                { name: "Marketing & Branding", desc: "Featured catalog placement and direct reach to corporate buyers." },
-                { name: "Mentoring", desc: "Advisory sessions with supply chain veterans in logistics and contracts." },
-                { name: "Networking Circles", desc: "Industry-specific meetups fostering partnerships and consortium bidding." },
+                {
+                  name: "Market Place",
+                  tag: "Unified B2B Trade",
+                  desc: "Bazro marketplace brings entering goods, foundation goods, and facilitating goods in one location with direct conversation on quality and price.",
+                  bullet: "Flexible B2B terms • Global market reach • Enhanced network buying influence",
+                },
+                {
+                  name: "Market & Technology Trend",
+                  tag: "Demand & Tech Intelligence",
+                  desc: "Adopts smart technologies to identify customer preferences, forecast demand, and provide periodical updates on global technological shifts.",
+                  bullet: "Manufacturing efficiency • Employee reskilling guidance • Productivity & defect analysis",
+                },
+                {
+                  name: "R&D and Product Innovation support",
+                  tag: "Incubators & Research Parks",
+                  desc: "Supports Research & Development for long-term competitiveness, enabling industries to develop new products and reduce operating costs.",
+                  bullet: "Research park partnerships • Process improvements • Increased output yield",
+                },
+                {
+                  name: "Government Grant & Funding",
+                  tag: "MSME Subsidies & Grants",
+                  desc: "Supports MSMEs facing capital hurdles with central & state government schemes, interest subsidies, tenders, patent support, and capital grants.",
+                  bullet: "Government interest subsidies • Tender assistance • Capital & patent support",
+                },
+                {
+                  name: "Professional staffing support",
+                  tag: "Industrial & Technical Staffing",
+                  desc: "Tailored workforce solutions for production facilities, assembly lines, and commercial operations across specialized industrial sectors.",
+                  bullet: "Temporary workers • Permanent recruitment • Contract & certified technician labor",
+                },
+                {
+                  name: "Skill Development & Training",
+                  tag: "Workforce Upskilling",
+                  desc: "Accelerates MSME performance through skilling, reskilling, and upskilling for modern technologies like data analytics, automation, and cybersecurity.",
+                  bullet: "Skill gap identification • Institutional partnerships • Measurable training impact",
+                },
               ].map((svc, i) => (
                 <div
                   key={i}
-                  className="p-5 bg-white border border-slate-200 rounded-xl space-y-2 shadow-sm hover:shadow-md transition-shadow"
+                  className="p-6 bg-white border border-slate-200 rounded-2xl space-y-3 shadow-xs hover:border-[#FF7A00]/40 hover:shadow-md transition-all flex flex-col justify-between"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center font-bold text-sm">
-                    {i + 1}
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-lg bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center font-bold text-sm">
+                        {i + 1}
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#0D9488] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                        {svc.tag}
+                      </span>
+                    </div>
+                    <h4 className="font-heading font-bold text-base text-[#0F172A] leading-snug">
+                      {svc.name}
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {svc.desc}
+                    </p>
+                    <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                      {svc.bullet}
+                    </div>
                   </div>
-                  <h4 className="font-heading font-bold text-sm text-[#0F172A]">
-                    {svc.name}
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {svc.desc}
-                  </p>
-                  <Link href="/services" className="text-xs font-semibold text-[#FF7A00] hover:underline block pt-1">
-                    Enquire Now →
-                  </Link>
+                  <div className="pt-2">
+                    <Link href="/services" className="text-xs font-bold text-[#FF7A00] hover:text-[#EA580C] flex items-center gap-1 transition-colors">
+                      <span>Request Advisory</span>
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>

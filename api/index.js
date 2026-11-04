@@ -54756,52 +54756,84 @@ var ENTERPRISE_CATEGORIES = [
 ];
 var SERVICES_LIST = [
   {
-    id: "b2b_connect",
-    name: "B2B Connect & Matchmaking",
-    icon: "handshake",
-    description: "Direct introduction to verified manufacturers and wholesale distributors aligned with your specific quantity requirements and quality tolerances."
+    id: "marketplace_sourcing",
+    name: "Market Place",
+    icon: "store",
+    tagline: "Entering, Foundation & Facilitating Goods In One Unified Network",
+    description: "Bazro marketplace brings entering goods, foundation goods, and facilitating goods together in one central location to unlock direct, transparent trade.",
+    highlights: [
+      "Bazro marketplace contains entering goods, foundation goods, and facilitating goods in one location",
+      "The nature of the business market is made more direct, and more conversation about the right product with the right quality and price is enabled",
+      "The inelastic nature of B2B is made flexible through agile commercial terms",
+      "Market size is made global, connecting suppliers with a broader volume buyer base",
+      "We enhance the buying influence through our integrated B2B network"
+    ]
   },
   {
-    id: "grants_funding",
-    name: "Grants & Funding Information Desk",
-    icon: "account_balance",
-    description: "Curated registry of relevant central and state government MSME schemes, subsidized credit links, and export promotion incentives."
-  },
-  {
-    id: "education_training",
-    name: "Education & Sourcing Training",
-    icon: "school",
-    description: "Actionable webinars and procurement masterclasses on GST optimization, HSN classification, supplier contract negotiations, and quality compliance."
-  },
-  {
-    id: "incubation",
-    name: "Incubation Support",
-    icon: "rocket_launch",
-    description: "Operational guidance for new manufacturing and retail ventures, from prototype sourcing to supply chain setup."
-  },
-  {
-    id: "investor_connect",
-    name: "Investor Connect Facilitation",
+    id: "market_technology_trends",
+    name: "Market & Technology Trend",
     icon: "trending_up",
-    description: "Periodic vendor showcase platforms connecting high-growth supply enterprises with trade finance and institutional capital partners."
+    tagline: "Demand Forecasting, Trend Identification & Industrial Tech Upgradation",
+    description: "By adopting appropriate technologies, Bazro identifies customer preferences, purchase behaviour, and accurately forecasts demand.",
+    highlights: [
+      "Bazro keeps watching market trends to identify emerging markets, unexplored customer segments, new revenue streams, and opportunities for business expansion",
+      "Periodical updates on the impact of changing technology on the present sustainability of the business",
+      "Identifies opportunities to improve efficiency in the manufacturing process and gain market share",
+      "Identifies skill gaps and new job roles, suggesting timely employee reskilling",
+      "Data Analysis across productivity, defect rates, equipment downtime, employee retention, and customer satisfaction"
+    ]
   },
   {
-    id: "marketing_branding",
-    name: "B2B Marketing & Product Showcasing",
-    icon: "campaign",
-    description: "Featured directory placements, targeted newsletter distribution to corporate purchase managers, and catalogue optimization."
+    id: "rd_product_innovation",
+    name: "R&D and Product Innovation support",
+    icon: "lightbulb",
+    tagline: "Research Parks, Incubators & Operational Cost Reduction",
+    description: "BazroKart supports Research and Development (R&D) for long-term sustainability, managing competitiveness and industrial growth.",
+    highlights: [
+      "Comprehensive R&D support for long-term sustainability, managing competitiveness, and industrial growth",
+      "Through renowned research parks and incubators, Bazro enables industries to develop new products",
+      "Assistance in improving existing processes and adopting advanced manufacturing technologies",
+      "Expert engineering support to reduce operational costs and increase plant productivity"
+    ]
   },
   {
-    id: "mentoring",
-    name: "Industry Mentorship",
-    icon: "psychology",
-    description: "One-on-one advisory sessions with seasoned supply chain veterans in logistics, export documentation, and manufacturing efficiency."
+    id: "government_grant_funding",
+    name: "Government Grant & Funding",
+    icon: "landmark",
+    tagline: "Subsidies, Tenders, Patent Protection & Capital Assistance",
+    description: "Government grants and funding significantly support MSMEs that face limited capital, high borrowing costs, inadequate R&D facilities, and market hurdles.",
+    highlights: [
+      "Active communication on central and state government schemes, interest subsidies, and financial relief",
+      "Guidance and access for institutional tenders and public procurement contracts",
+      "Dedicated patent support, intellectual property facilitation, and innovation grants",
+      "Comprehensive assistance for capital subsidies, grants, market assistance, and technology & sustainability support"
+    ]
   },
   {
-    id: "networking",
-    name: "Business Networking Circles",
-    icon: "hub",
-    description: "Regional and industry-specific business meetups fostering partnerships, consortium bidding, and cross-enterprise trade."
+    id: "professional_staffing",
+    name: "Professional staffing support",
+    icon: "users",
+    tagline: "Temporary, Permanent, Contract & Factory Workforce Solutions",
+    description: "End-to-end industrial, commercial, and technical recruitment solutions to ensure uninterrupted manufacturing and operational agility.",
+    highlights: [
+      "Temporary staffing \u2013 Short-term workers for peak seasons and flexible production schedules",
+      "Permanent recruitment \u2013 Full-time professional, managerial, and technical staff",
+      "Contract staffing \u2013 Specialized professionals for engineering and precision projects",
+      "Labor supply \u2013 Skilled, unskilled, certified technicians, and production helpers"
+    ]
+  },
+  {
+    id: "skill_development_training",
+    name: "Skill Development & Training",
+    icon: "graduation_cap",
+    tagline: "Skilling, Reskilling & Upskilling for Modern Industrial Technologies",
+    description: "To raise and accelerate MSMEs' performance, skilling, reskilling, and upskilling are essential in an era of rapid technological change.",
+    highlights: [
+      "Addresses changing job roles and rising demand for skills in data analytics, automation, cybersecurity, and more",
+      "Identifies existing skill gaps across manufacturing and commercial workflows",
+      "Establishes strategic partnerships with accredited skill-development institutions",
+      "Explores eligible government skill-development programmes & industry training initiatives while measuring training effectiveness"
+    ]
   }
 ];
 
