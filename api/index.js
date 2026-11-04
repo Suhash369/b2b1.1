@@ -121262,68 +121262,6 @@ var ENV = {
 };
 
 // server/data/initialData.ts
-var INITIAL_CATEGORIES = [
-  {
-    id: "cat-agr",
-    name: "Agriculture & Farming",
-    slug: "agriculture-and-farming",
-    department: "Agriculture & Farming",
-    icon: "potted_plant",
-    description: "F1 hybrid seeds, OEM pruning shears, cold-pressed organic inputs, agricultural pumps and irrigation equipment.",
-    itemCount: "1,240+ items",
-    displayOrder: 1
-  },
-  {
-    id: "cat-elc",
-    name: "Electrical & Electronics",
-    slug: "electrical-and-electronics",
-    department: "Electrical & Electronics",
-    icon: "bolt",
-    description: "Tactile micro switches, Grade-A 18650 Li-Ion cells, line-interactive UPS units, and architectural work lamps.",
-    itemCount: "3,800+ items",
-    displayOrder: 2
-  },
-  {
-    id: "cat-sol",
-    name: "Renewable Energy & Solar",
-    slug: "renewable-energy-and-solar",
-    department: "Renewable Energy & Solar",
-    icon: "solar_power",
-    description: "High-efficiency 30A MPPT controllers, monocrystalline solar panels, 28W BLDC fans, and IP65 street luminaires.",
-    itemCount: "890+ items",
-    displayOrder: 3
-  },
-  {
-    id: "cat-app",
-    name: "Apparels & Fashion",
-    slug: "apparels-and-fashion",
-    department: "Apparels & Fashion",
-    icon: "apparel",
-    description: "Wrinkle-resistant corporate uniform blazers, 180 GSM combed cotton crew tees, and full-grain leather footwear.",
-    itemCount: "2,150+ items",
-    displayOrder: 4
-  },
-  {
-    id: "cat-fnb",
-    name: "Food & Beverages",
-    slug: "food-and-beverages",
-    department: "Food & Beverages",
-    icon: "restaurant",
-    description: "Royal 2-year aged long-grain basmati rice, single-estate orthodox Darjeeling tea, and stone-ground MP Sharbati atta.",
-    itemCount: "740+ items",
-    displayOrder: 5
-  },
-  {
-    id: "cat-ent",
-    name: "Enterprise & Startup Network",
-    slug: "enterprise-and-startup-network",
-    department: "Enterprise & Startup Network",
-    icon: "hub",
-    description: "Empanelment pathways, OEM supplier verification, MSME procurement desks, and cross-enterprise vendor agreements.",
-    itemCount: "560+ solutions",
-    displayOrder: 6
-  }
-];
 var SUBSCRIPTION_PLANS = [
   {
     id: "basic",
@@ -123158,21 +123096,9 @@ var BUNDLED_STORE_FILE = path.join(BUNDLED_DATA_DIR, "marketplace-store.json");
 var DATA_DIR = process.env.VERCEL ? path.join("/tmp", "server-data") : BUNDLED_DATA_DIR;
 var STORE_FILE = process.env.VERCEL ? path.join(DATA_DIR, "marketplace-store.json") : process.env.NODE_ENV === "test" || process.env.VITEST ? path.join(DATA_DIR, "marketplace-store.test.json") : BUNDLED_STORE_FILE;
 function createInitialStore() {
-  const now = /* @__PURE__ */ new Date();
-  const initialCategories = INITIAL_CATEGORIES.map((c) => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    department: c.department,
-    icon: c.icon,
-    description: c.description,
-    itemCount: "No listings yet",
-    displayOrder: c.displayOrder,
-    createdAt: now
-  }));
   return {
     users: [],
-    categories: initialCategories,
+    categories: [],
     products: [],
     rfqs: [],
     quotes: [],

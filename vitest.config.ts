@@ -15,6 +15,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["server/**/*.test.ts", "server/**/*.spec.ts"],
+    fileParallelism: false,
     env: {
       NODE_ENV: "test",
       MONGODB_URI: "mongodb://localhost:27017/bazrokart_test",

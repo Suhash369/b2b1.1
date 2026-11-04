@@ -115,3 +115,6 @@ temp/
 client/public/__manus__/version.json
 .vercel
 .env*
+
+server/data/*.test.json
+

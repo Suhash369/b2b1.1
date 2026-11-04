@@ -92,23 +92,9 @@ const STORE_FILE = process.env.VERCEL
   : BUNDLED_STORE_FILE;
 
 function createInitialStore(): LocalStore {
-  const now = new Date();
-
-  const initialCategories: Category[] = INITIAL_CATEGORIES.map((c) => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    department: c.department,
-    icon: c.icon,
-    description: c.description,
-    itemCount: "No listings yet",
-    displayOrder: c.displayOrder,
-    createdAt: now,
-  }));
-
   return {
     users: [],
-    categories: initialCategories,
+    categories: [],
     products: [],
     rfqs: [],
     quotes: [],
