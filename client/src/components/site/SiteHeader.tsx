@@ -390,17 +390,7 @@ export default function SiteHeader({
               </Link>
             </div>
 
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                  if (onOpenRfq) onOpenRfq();
-                }}
-                className="px-4 py-2 bg-[#FF7A00] text-white rounded-lg text-xs font-bold hover:bg-[#EA580C]"
-              >
-                Request RFQ
-              </button>
+            <div className="pt-3 border-t border-white/10 flex items-center justify-end">
 
               {user ? (
                 <div className="flex items-center gap-2">

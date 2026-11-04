@@ -35,3 +35,4 @@ export async function logAuditEvent(params: AuditParams): Promise<void> {
     console.warn(`[AuditLog] Failed to record event ${params.action}:`, err.message);
   }
 }
+

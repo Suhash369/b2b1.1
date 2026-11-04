@@ -54,6 +54,17 @@ describe("Marketplace Database-Driven Integrity & Tenant Isolation", () => {
   });
 
   it("retrieves genuine supplier profiles and attaches them to products", async () => {
+    await db.upsertUser({
+      openId: `test_supplier_${Date.now()}`,
+      name: "Quality Motors OEM",
+      email: `supplier_${Date.now()}@motorsoem.in`,
+      role: "seller",
+      companyName: "Quality Motors OEM Private Limited",
+      city: "Coimbatore",
+      state: "Tamil Nadu",
+      isVerified: true,
+      loginMethod: "credentials",
+    });
     const sellers = await db.listSuppliers();
     expect(sellers.length).toBeGreaterThan(0);
     for (const s of sellers) {

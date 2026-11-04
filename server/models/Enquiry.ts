@@ -56,3 +56,4 @@ EnquirySchema.index({ buyerId: 1, createdAt: -1 });
 export const Enquiry: Model<IEnquiry> =
   mongoose.models.Enquiry ||
   mongoose.model<IEnquiry>("Enquiry", EnquirySchema);
+

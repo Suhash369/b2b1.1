@@ -55,3 +55,4 @@ AuditLogSchema.index({ userId: 1, timestamp: -1 });
 export const AuditLog: Model<IAuditLog> =
   mongoose.models.AuditLog ||
   mongoose.model<IAuditLog>("AuditLog", AuditLogSchema);
+

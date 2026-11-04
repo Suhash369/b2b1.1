@@ -41,3 +41,4 @@ SavedProductSchema.index({ buyerId: 1, productId: 1 }, { unique: true });
 export const SavedProduct: Model<ISavedProduct> =
   mongoose.models.SavedProduct ||
   mongoose.model<ISavedProduct>("SavedProduct", SavedProductSchema);
+

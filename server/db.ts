@@ -87,11 +87,12 @@ const DATA_DIR = process.env.VERCEL
   : BUNDLED_DATA_DIR;
 const STORE_FILE = process.env.VERCEL
   ? path.join(DATA_DIR, "marketplace-store.json")
+  : (process.env.NODE_ENV === "test" || process.env.VITEST)
+  ? path.join(DATA_DIR, "marketplace-store.test.json")
   : BUNDLED_STORE_FILE;
 
 function createInitialStore(): LocalStore {
   const now = new Date();
-  const initialProducts: Product[] = [];
 
   const initialCategories: Category[] = INITIAL_CATEGORIES.map((c) => ({
     id: c.id,
@@ -105,86 +106,14 @@ function createInitialStore(): LocalStore {
     createdAt: now,
   }));
 
-  const initialUsers: User[] = [
-    {
-      id: 1,
-      openId: "casagrand_procure",
-      name: "Casagrand Procure",
-      email: "corporate.desk@bazrokart.com",
-      phone: "+91 98401 22334",
-      passwordHash: null,
-      companyName: "Casagrand Royale Procurement Entity",
-      gstNumber: "33AAFCB1245P1ZX",
-      address: "A1-508, Casagrand Royale, Sholinganallur, Chennai, TN - 600119",
-      city: "Chennai",
-      state: "Tamil Nadu",
-      loginMethod: "credentials",
-      role: "buyer",
-      isVerified: true,
-      createdAt: now,
-      updatedAt: now,
-      lastSignedIn: now,
-    },
-    {
-      id: 2,
-      openId: "apex_seller",
-      name: "Apex Power Systems",
-      email: "sales@apexpower.in",
-      phone: "+91 94440 55667",
-      passwordHash: null,
-      companyName: "Apex Power Systems Private Limited",
-      gstNumber: "33AAACA7112M1ZT",
-      address: "Guindy Industrial Estate, Chennai, TN",
-      city: "Chennai",
-      state: "Tamil Nadu",
-      loginMethod: "credentials",
-      role: "seller",
-      isVerified: true,
-      createdAt: now,
-      updatedAt: now,
-      lastSignedIn: now,
-    },
-    {
-      id: 3,
-      openId: "admin_bazro",
-      name: "BazroKart Platform Admin",
-      email: "admin@bazrokart.com",
-      phone: "+91 99620 11223",
-      passwordHash: null,
-      companyName: "BazroKart Private Limited",
-      gstNumber: "33AAFCB1245P1ZX",
-      address: "Casagrand Royale, Chennai HUB",
-      city: "Chennai",
-      state: "Tamil Nadu",
-      loginMethod: "credentials",
-      role: "admin",
-      isVerified: true,
-      createdAt: now,
-      updatedAt: now,
-      lastSignedIn: now,
-    },
-  ];
-
   return {
-    users: initialUsers,
+    users: [],
     categories: initialCategories,
-    products: initialProducts,
+    products: [],
     rfqs: [],
     quotes: [],
     orders: [],
-    subscriptions: [
-      {
-        id: "sub-1",
-        userId: 1,
-        planName: "premium",
-        price: "4999.00",
-        billingInterval: "monthly",
-        listingLimit: 50,
-        status: "active",
-        startedAt: now,
-        expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-      },
-    ],
+    subscriptions: [],
     networkConnections: [],
     serviceEnquiries: [],
     enterpriseApplications: [],

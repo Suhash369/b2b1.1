@@ -53,3 +53,4 @@ ReviewSchema.index({ productId: 1, createdAt: -1 });
 export const Review: Model<IReview> =
   mongoose.models.Review ||
   mongoose.model<IReview>("Review", ReviewSchema);
+
