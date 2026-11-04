@@ -5,6 +5,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { publicPlatformScript } from "./publicConfig";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import { getMongoStatus } from "../config/database";
 
 export function createExpressApp() {
   const app = express();
@@ -15,6 +16,11 @@ export function createExpressApp() {
 
   // Health check routes
   app.get(["/api/health", "/health"], (_req, res) => res.json({ status: "ok" }));
+
+  // Centralized Database status monitoring
+  app.get(["/api/database/status", "/database/status"], (_req, res) => {
+    res.json(getMongoStatus());
+  });
 
   // Platform runtime config script
   app.get(["/api/platform/config.js", "/platform/config.js"], (_req, res) => {

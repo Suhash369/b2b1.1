@@ -767,6 +767,85 @@ export const appRouter = router({
       return db.getUnreadNotificationsCount(ctx.user.id);
     }),
   }),
+
+  // -------------------------------------------------------------
+  // Saved Products (Bookmarks) Router
+  // -------------------------------------------------------------
+  savedProducts: router({
+    save: publicProcedure
+      .input(
+        z.object({
+          productId: z.string(),
+          supplierId: z.any().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Sign in required to bookmark products." });
+        }
+        return db.saveProduct(ctx.user.id, input.productId, input.supplierId);
+      }),
+
+    unsave: publicProcedure
+      .input(z.object({ productId: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) return false;
+        return db.unsaveProduct(ctx.user.id, input.productId);
+      }),
+
+    list: publicProcedure.query(async ({ ctx }) => {
+      if (!ctx.user) return [];
+      return db.listSavedProducts(ctx.user.id);
+    }),
+  }),
+
+  // -------------------------------------------------------------
+  // Genuine Reviews Router
+  // -------------------------------------------------------------
+  reviews: router({
+    create: publicProcedure
+      .input(
+        z.object({
+          supplierId: z.any(),
+          rating: z.number().min(1).max(5),
+          review: z.string().optional(),
+          productId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Sign in required to submit trade reviews." });
+        }
+        return db.createReview(ctx.user.id, input.supplierId, input.rating, input.review, input.productId);
+      }),
+
+    listForSupplier: publicProcedure
+      .input(z.object({ supplierId: z.any() }))
+      .query(async ({ input }) => {
+        return db.listReviewsForSupplier(input.supplierId);
+      }),
+  }),
+
+  // -------------------------------------------------------------
+  // Buyer-Supplier Direct Enquiries Router
+  // -------------------------------------------------------------
+  enquiries: router({
+    create: publicProcedure
+      .input(
+        z.object({
+          supplierId: z.any(),
+          message: z.string().min(5),
+          quantity: z.number().optional(),
+          productId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Sign in required to send supplier enquiries." });
+        }
+        return db.createEnquiry(ctx.user.id, input.supplierId, input.message, input.quantity, input.productId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
