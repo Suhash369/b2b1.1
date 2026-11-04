@@ -468,17 +468,23 @@ export default function Workspace({ cartItems = [] }: WorkspaceProps) {
             ) : (
               <div className="p-10 text-center space-y-3">
                 <FileText size={32} className="mx-auto text-[#64748B]" />
-                <div className="text-sm font-semibold text-[#172033]">No RFQs logged yet</div>
+                <div className="text-sm font-semibold text-[#172033]">
+                  {isSupplierRoute ? "No incoming RFQs yet" : "No RFQs logged yet"}
+                </div>
                 <p className="text-xs text-[#64748B] max-w-sm mx-auto">
-                  Submit a requirement brief with desired quantities, specifications, and delivery timelines to receive offers from OEM suppliers.
+                  {isSupplierRoute
+                    ? "When buyers submit procurement requirement briefs, they will appear here ready for factory quotations and commercial terms."
+                    : "Submit a requirement brief with desired quantities, specifications, and delivery timelines to receive offers from OEM suppliers."}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setIsRfqModalOpen(true)}
-                  className="px-5 py-2.5 bg-[#FF7A00] hover:bg-[#EA580C] text-white rounded-xl text-xs font-bold"
-                >
-                  Create First RFQ
-                </button>
+                {!isSupplierRoute && (
+                  <button
+                    type="button"
+                    onClick={() => setIsRfqModalOpen(true)}
+                    className="px-5 py-2.5 bg-[#FF7A00] hover:bg-[#EA580C] text-white rounded-xl text-xs font-bold"
+                  >
+                    Create First RFQ
+                  </button>
+                )}
               </div>
             )}
           </div>
