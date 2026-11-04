@@ -1,7 +1,16 @@
+import "dotenv/config";
+import dns from "dns";
 import mongoose from "mongoose";
 
-const DEFAULT_URI = "mongodb://localhost:27017/bazrokart";
-const FALLBACK_IP_URI = "mongodb://127.0.0.1:27017/bazrokart";
+// Ensure DNS SRV resolution succeeds across all local and cloud environments
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
+} catch {
+  // Ignore in restricted environments
+}
+
+const DEFAULT_URI = "mongodb+srv://sivaprof46_db_user:Siva%407305@cluster0.peikbmh.mongodb.net/bazrokart?compressors=zlib";
+const FALLBACK_LOCAL_URI = "mongodb://127.0.0.1:27017/bazrokart";
 
 let isConnecting = false;
 let shutdownRegistered = false;
@@ -22,6 +31,59 @@ function isConnectionReady(): boolean {
   return (mongoose.connection.readyState as unknown as number) === 1;
 }
 
+/**
+ * Normalizes MongoDB connection URI:
+ * 1. Encodes special characters in password (such as '@' to '%40')
+ * 2. Strips Atlas template angle brackets (e.g. :<password>@ -> :password@)
+ * 3. Ensures the dedicated 'bazrokart' database name is present in the path
+ */
+export function normalizeMongoUri(rawUri: string): string {
+  let cleaned = rawUri.trim();
+
+  // Strip angle brackets around password if present
+  cleaned = cleaned.replace(/:<([^>]+)>@/, (_match, p1) => {
+    return `:${encodeURIComponent(p1)}@`;
+  });
+
+  // Handle unencoded '@' inside password
+  const protoMatch = cleaned.match(/^(mongodb(?:\+srv)?:\/\/)(.*)$/);
+  if (protoMatch) {
+    const rest = protoMatch[2];
+    const atIndex = rest.lastIndexOf("@");
+    if (atIndex > -1) {
+      const auth = rest.substring(0, atIndex);
+      const hostPart = rest.substring(atIndex + 1);
+      const colonIndex = auth.indexOf(":");
+      if (colonIndex > -1) {
+        const user = auth.substring(0, colonIndex);
+        let pass = auth.substring(colonIndex + 1);
+        try {
+          pass = decodeURIComponent(pass);
+        } catch {
+          // ignore
+        }
+        pass = encodeURIComponent(pass);
+        cleaned = `${protoMatch[1]}${user}:${pass}@${hostPart}`;
+      }
+    }
+  }
+
+  // Ensure 'bazrokart' database name is included before query params
+  if (cleaned.includes(".mongodb.net/?")) {
+    cleaned = cleaned.replace(".mongodb.net/?", ".mongodb.net/bazrokart?");
+  } else if (cleaned.endsWith(".mongodb.net/")) {
+    cleaned = `${cleaned}bazrokart`;
+  } else if (cleaned.endsWith(".mongodb.net")) {
+    cleaned = `${cleaned}/bazrokart`;
+  }
+
+  return cleaned;
+}
+
+export function sanitizeLogUri(uri: string): string {
+  return uri.replace(/:\/\/([^:]+):([^@]+)@/, "://$1:****@");
+}
+
 export async function connectMongoDB(): Promise<typeof mongoose | null> {
   // Check if already connected
   if (isConnectionReady()) {
@@ -31,7 +93,7 @@ export async function connectMongoDB(): Promise<typeof mongoose | null> {
   // Prevent race conditions on concurrent connection calls
   if (isConnecting) {
     let attempts = 0;
-    while (isConnecting && attempts < 20) {
+    while (isConnecting && attempts < 25) {
       await new Promise((resolve) => setTimeout(resolve, 200));
       attempts++;
     }
@@ -43,31 +105,32 @@ export async function connectMongoDB(): Promise<typeof mongoose | null> {
   isConnecting = true;
   lastConnectionError = null;
 
-  const primaryUri = process.env.MONGODB_URI || DEFAULT_URI;
+  const rawUri = process.env.MONGODB_URI || DEFAULT_URI;
+  const primaryUri = normalizeMongoUri(rawUri);
 
   const options: mongoose.ConnectOptions = {
     maxPoolSize: 10,
     minPoolSize: 2,
-    serverSelectionTimeoutMS: 4000,
+    serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
     autoIndex: true,
   };
 
   try {
-    console.log(`[MongoDB] Connecting to dedicated database at ${primaryUri}...`);
+    console.log(`[MongoDB] Connecting to dedicated database at ${sanitizeLogUri(primaryUri)}...`);
     await mongoose.connect(primaryUri, options);
     console.log(`[MongoDB] Connected successfully to database: ${mongoose.connection.name}`);
     registerLifecycleHandlers();
     isConnecting = false;
     return mongoose;
   } catch (primaryErr: any) {
-    console.warn(`[MongoDB] Connection to ${primaryUri} failed (${primaryErr.message}). Testing fallback loopback...`);
-    
-    // If primary failed and was using localhost, retry with 127.0.0.1 (IPv4 loopback bypass)
+    console.warn(`[MongoDB] Primary connection failed (${primaryErr.message}). Testing fallback...`);
+
+    // If primary was localhost, try 127.0.0.1 loopback
     if (primaryUri.includes("localhost")) {
       try {
-        await mongoose.connect(FALLBACK_IP_URI, options);
-        console.log(`[MongoDB] Connected successfully via fallback 127.0.0.1 to database: ${mongoose.connection.name}`);
+        await mongoose.connect(FALLBACK_LOCAL_URI, options);
+        console.log(`[MongoDB] Connected successfully via fallback loopback to database: ${mongoose.connection.name}`);
         registerLifecycleHandlers();
         isConnecting = false;
         return mongoose;

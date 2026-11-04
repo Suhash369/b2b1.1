@@ -39829,7 +39829,7 @@ var require_gssapi = __commonJS({
     exports.GSSAPI = exports.GSSAPICanonicalizationValue = void 0;
     exports.performGSSAPICanonicalizeHostName = performGSSAPICanonicalizeHostName;
     exports.resolveCname = resolveCname;
-    var dns = __require("dns");
+    var dns2 = __require("dns");
     var deps_1 = require_deps();
     var error_1 = require_error();
     var utils_1 = require_utils3();
@@ -39928,9 +39928,9 @@ var require_gssapi = __commonJS({
         return host;
       }
       if (mode === exports.GSSAPICanonicalizationValue.on || mode === exports.GSSAPICanonicalizationValue.forwardAndReverse) {
-        const { address } = await dns.promises.lookup(host);
+        const { address } = await dns2.promises.lookup(host);
         try {
-          const results = await dns.promises.resolve(address, "PTR");
+          const results = await dns2.promises.resolve(address, "PTR");
           return results.length > 0 ? results[0] : host;
         } catch {
           return await resolveCname(host);
@@ -39941,7 +39941,7 @@ var require_gssapi = __commonJS({
     }
     async function resolveCname(host) {
       try {
-        const results = await dns.promises.resolve(host, "CNAME");
+        const results = await dns2.promises.resolve(host, "CNAME");
         return results.length > 0 ? results[0] : host;
       } catch {
         return host;
@@ -49667,7 +49667,7 @@ var require_connection_string = __commonJS({
     exports.DEFAULT_OPTIONS = exports.OPTIONS = void 0;
     exports.resolveSRVRecord = resolveSRVRecord;
     exports.parseOptions = parseOptions;
-    var dns = __require("dns");
+    var dns2 = __require("dns");
     var mongodb_connection_string_url_1 = require_lib4();
     var process2 = __require("process");
     var url_1 = __require("url");
@@ -49689,12 +49689,12 @@ var require_connection_string = __commonJS({
     var LB_REPLICA_SET_ERROR = "loadBalanced option not supported with a replicaSet option";
     var LB_DIRECT_CONNECTION_ERROR = "loadBalanced option not supported when directConnection is provided";
     function retryDNSTimeoutFor(rrtype) {
-      const resolve = rrtype === "SRV" ? (address) => dns.promises.resolve(address, "SRV") : (address) => dns.promises.resolve(address, "TXT");
+      const resolve = rrtype === "SRV" ? (address) => dns2.promises.resolve(address, "SRV") : (address) => dns2.promises.resolve(address, "TXT");
       return async function dnsReqRetryTimeout(lookupAddress) {
         try {
           return await resolve(lookupAddress);
         } catch (firstDNSError) {
-          if (firstDNSError.code === dns.TIMEOUT) {
+          if (firstDNSError.code === dns2.TIMEOUT) {
             return await resolve(lookupAddress);
           } else {
             throw firstDNSError;
@@ -52957,7 +52957,7 @@ var require_srv_polling = __commonJS({
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SrvPoller = exports.SrvPollingEvent = void 0;
-    var dns = __require("dns");
+    var dns2 = __require("dns");
     var timers_1 = __require("timers");
     var error_1 = require_error();
     var mongo_types_1 = require_mongo_types();
@@ -53030,7 +53030,7 @@ var require_srv_polling = __commonJS({
         const generation = this.generation;
         let srvRecords;
         try {
-          srvRecords = await dns.promises.resolve(this.srvAddress, "SRV");
+          srvRecords = await dns2.promises.resolve(this.srvAddress, "SRV");
         } catch {
           this.failure();
           return;
@@ -121458,13 +121458,55 @@ var SERVICES_LIST = [
 
 // server/config/database.ts
 var import_mongoose = __toESM(require_mongoose2(), 1);
-var DEFAULT_URI = "mongodb://localhost:27017/bazrokart";
-var FALLBACK_IP_URI = "mongodb://127.0.0.1:27017/bazrokart";
+import dns from "dns";
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
+} catch {
+}
+var DEFAULT_URI = "mongodb+srv://sivaprof46_db_user:Siva%407305@cluster0.peikbmh.mongodb.net/bazrokart?compressors=zlib";
+var FALLBACK_LOCAL_URI = "mongodb://127.0.0.1:27017/bazrokart";
 var isConnecting = false;
 var shutdownRegistered = false;
 var lastConnectionError = null;
 function isConnectionReady() {
   return import_mongoose.default.connection.readyState === 1;
+}
+function normalizeMongoUri(rawUri) {
+  let cleaned = rawUri.trim();
+  cleaned = cleaned.replace(/:<([^>]+)>@/, (_match, p1) => {
+    return `:${encodeURIComponent(p1)}@`;
+  });
+  const protoMatch = cleaned.match(/^(mongodb(?:\+srv)?:\/\/)(.*)$/);
+  if (protoMatch) {
+    const rest = protoMatch[2];
+    const atIndex = rest.lastIndexOf("@");
+    if (atIndex > -1) {
+      const auth = rest.substring(0, atIndex);
+      const hostPart = rest.substring(atIndex + 1);
+      const colonIndex = auth.indexOf(":");
+      if (colonIndex > -1) {
+        const user = auth.substring(0, colonIndex);
+        let pass = auth.substring(colonIndex + 1);
+        try {
+          pass = decodeURIComponent(pass);
+        } catch {
+        }
+        pass = encodeURIComponent(pass);
+        cleaned = `${protoMatch[1]}${user}:${pass}@${hostPart}`;
+      }
+    }
+  }
+  if (cleaned.includes(".mongodb.net/?")) {
+    cleaned = cleaned.replace(".mongodb.net/?", ".mongodb.net/bazrokart?");
+  } else if (cleaned.endsWith(".mongodb.net/")) {
+    cleaned = `${cleaned}bazrokart`;
+  } else if (cleaned.endsWith(".mongodb.net")) {
+    cleaned = `${cleaned}/bazrokart`;
+  }
+  return cleaned;
+}
+function sanitizeLogUri(uri) {
+  return uri.replace(/:\/\/([^:]+):([^@]+)@/, "://$1:****@");
 }
 async function connectMongoDB() {
   if (isConnectionReady()) {
@@ -121472,7 +121514,7 @@ async function connectMongoDB() {
   }
   if (isConnecting) {
     let attempts = 0;
-    while (isConnecting && attempts < 20) {
+    while (isConnecting && attempts < 25) {
       await new Promise((resolve) => setTimeout(resolve, 200));
       attempts++;
     }
@@ -121482,27 +121524,28 @@ async function connectMongoDB() {
   }
   isConnecting = true;
   lastConnectionError = null;
-  const primaryUri = process.env.MONGODB_URI || DEFAULT_URI;
+  const rawUri = process.env.MONGODB_URI || DEFAULT_URI;
+  const primaryUri = normalizeMongoUri(rawUri);
   const options = {
     maxPoolSize: 10,
     minPoolSize: 2,
-    serverSelectionTimeoutMS: 4e3,
+    serverSelectionTimeoutMS: 1e4,
     socketTimeoutMS: 45e3,
     autoIndex: true
   };
   try {
-    console.log(`[MongoDB] Connecting to dedicated database at ${primaryUri}...`);
+    console.log(`[MongoDB] Connecting to dedicated database at ${sanitizeLogUri(primaryUri)}...`);
     await import_mongoose.default.connect(primaryUri, options);
     console.log(`[MongoDB] Connected successfully to database: ${import_mongoose.default.connection.name}`);
     registerLifecycleHandlers();
     isConnecting = false;
     return import_mongoose.default;
   } catch (primaryErr) {
-    console.warn(`[MongoDB] Connection to ${primaryUri} failed (${primaryErr.message}). Testing fallback loopback...`);
+    console.warn(`[MongoDB] Primary connection failed (${primaryErr.message}). Testing fallback...`);
     if (primaryUri.includes("localhost")) {
       try {
-        await import_mongoose.default.connect(FALLBACK_IP_URI, options);
-        console.log(`[MongoDB] Connected successfully via fallback 127.0.0.1 to database: ${import_mongoose.default.connection.name}`);
+        await import_mongoose.default.connect(FALLBACK_LOCAL_URI, options);
+        console.log(`[MongoDB] Connected successfully via fallback loopback to database: ${import_mongoose.default.connection.name}`);
         registerLifecycleHandlers();
         isConnecting = false;
         return import_mongoose.default;
