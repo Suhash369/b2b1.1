@@ -350,38 +350,33 @@ export default function Home({
 
         {/* ========================================================= */}
         {/* SECTION C.2 — FEATURED WHOLESALE PRODUCTS SHOWCASE         */}
+        {/* Rendered dynamically once supplier adds listings          */}
         {/* ========================================================= */}
-        <section className="py-16 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-          <div className="shell space-y-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#FF7A00]">
-                  Verified Production Lots
-                </span>
-                <h2 className="font-heading font-extrabold text-[clamp(1.65rem,2.5vw,2.35rem)] text-[#0F172A] tracking-[-0.035em] leading-[1.15] mt-1">
-                  Featured B2B Wholesale Listings
-                </h2>
-                <p className="text-xs sm:text-sm text-[#64748B] mt-1">
-                  Pan-India factory-direct listings with transparent MOQ and bulk volume matrices
-                </p>
+        {featuredProducts.length > 0 && (
+          <section className="py-16 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+            <div className="shell space-y-8">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#FF7A00]">
+                    Verified Production Lots
+                  </span>
+                  <h2 className="font-heading font-extrabold text-[clamp(1.65rem,2.5vw,2.35rem)] text-[#0F172A] tracking-[-0.035em] leading-[1.15] mt-1">
+                    Featured B2B Wholesale Listings
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#64748B] mt-1">
+                    Pan-India factory-direct listings with transparent MOQ and bulk volume matrices
+                  </p>
+                </div>
+
+                <Link
+                  href="/products"
+                  className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#EA580C] active:scale-95 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+                >
+                  <span>View Full Catalog</span>
+                  <ArrowRight size={14} />
+                </Link>
               </div>
 
-              <Link
-                href="/products"
-                className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#EA580C] active:scale-95 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
-              >
-                <span>View Full Catalog</span>
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-
-            {featuredProducts.length === 0 ? (
-              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-12 text-center max-w-lg mx-auto">
-                <p className="text-[#64748B] text-sm font-medium">
-                  No products are available yet. Please check back later.
-                </p>
-              </div>
-            ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredProducts.slice(0, 8).map((product) => {
                   const price = typeof product.price === "string" ? parseFloat(product.price) : Number(product.price);
@@ -472,9 +467,9 @@ export default function Home({
                   );
                 })}
               </div>
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
 
         {/* ========================================================= */}
         {/* SECTION D — BUYER AND SELLER JOURNEYS                     */}
