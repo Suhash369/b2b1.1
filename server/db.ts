@@ -139,7 +139,7 @@ function initLocalStore(): LocalStore {
   return initial;
 }
 
-function saveLocalStore(store: LocalStore) {
+export function saveLocalStore(store: LocalStore) {
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -206,13 +206,18 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   // 2. Local fallback update
-  const idx = localStore.users.findIndex((u) => u.openId === user.openId);
+  const idx = localStore.users.findIndex(
+    (u) =>
+      u.openId === user.openId ||
+      (Boolean(user.email) && u.email?.toLowerCase() === user.email?.toLowerCase())
+  );
   const now = new Date();
   let assignedNumericId = idx >= 0 ? localStore.users[idx].id : localStore.users.length + 1;
 
   if (idx >= 0) {
     localStore.users[idx] = {
       ...localStore.users[idx],
+      openId: user.openId ?? localStore.users[idx].openId,
       name: user.name ?? localStore.users[idx].name,
       email: user.email ?? localStore.users[idx].email,
       phone: user.phone ?? localStore.users[idx].phone,
@@ -287,6 +292,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
       if (mongoUser) {
         if (normalizedRole === "buyer") {
+          // Remove any conflicting supplier profile for this user
+          await SupplierProfile.deleteMany({ userId: mongoUser._id });
           await BuyerProfile.findOneAndUpdate(
             { userId: mongoUser._id },
             {
@@ -305,6 +312,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
             { upsert: true }
           );
         } else if (normalizedRole === "supplier" || user.role === "seller") {
+          // Remove any conflicting buyer profile for this user
+          await BuyerProfile.deleteMany({ userId: mongoUser._id });
           await SupplierProfile.findOneAndUpdate(
             { userId: mongoUser._id },
             {
@@ -378,6 +387,13 @@ export async function getUserByOpenId(openId: string): Promise<User | undefined>
           lastSignedIn: mUser.lastLogin || mUser.updatedAt,
         };
       }
+      // If MongoDB is connected and mUser is null, user was deleted from the database
+      const staleIdx = localStore.users.findIndex((u) => u.openId === openId);
+      if (staleIdx >= 0) {
+        localStore.users.splice(staleIdx, 1);
+        saveLocalStore(localStore);
+      }
+      return undefined;
     } catch (e) {}
   }
 
@@ -409,6 +425,16 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
           lastSignedIn: mUser.lastLogin || mUser.updatedAt,
         };
       }
+      // If MongoDB is connected and mUser is null, the user was deleted from MongoDB.
+      // Purge any stale cache from localStore and return undefined so re-registration succeeds.
+      const staleIdx = localStore.users.findIndex(
+        (u) => u.email?.toLowerCase() === email.toLowerCase()
+      );
+      if (staleIdx >= 0) {
+        localStore.users.splice(staleIdx, 1);
+        saveLocalStore(localStore);
+      }
+      return undefined;
     } catch (e) {}
   }
   return localStore.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
@@ -439,13 +465,78 @@ export async function getUserById(id: number): Promise<User | undefined> {
           lastSignedIn: mUser.lastLogin || mUser.updatedAt,
         };
       }
+      const staleIdx = localStore.users.findIndex((u) => u.id === id);
+      if (staleIdx >= 0) {
+        localStore.users.splice(staleIdx, 1);
+        saveLocalStore(localStore);
+      }
+      return undefined;
     } catch (e) {}
   }
   return localStore.users.find((u) => u.id === id);
 }
 
 export async function listUsers(): Promise<User[]> {
+  if (isMongoConnected()) {
+    try {
+      const mUsers = await MongoUser.find({});
+      if (mUsers.length > 0) {
+        return mUsers.map((mUser) => ({
+          id: mUser.numericId || 1,
+          openId: mUser.openId || `usr_${mUser.numericId || Date.now()}`,
+          name: mUser.name,
+          email: mUser.email,
+          phone: mUser.phone || null,
+          companyName: mUser.companyName || null,
+          gstNumber: mUser.gstNumber || null,
+          address: mUser.address || null,
+          city: mUser.city || null,
+          state: mUser.state || null,
+          loginMethod: mUser.loginMethod,
+          role: mUser.role === "supplier" ? "seller" : mUser.role,
+          isVerified: mUser.isVerified,
+          passwordHash: mUser.passwordHash || null,
+          createdAt: mUser.createdAt,
+          updatedAt: mUser.updatedAt,
+          lastSignedIn: mUser.lastLogin || mUser.updatedAt,
+        }));
+      }
+      return [];
+    } catch (e) {}
+  }
   return localStore.users;
+}
+
+export async function deleteUser(emailOrOpenId: string): Promise<boolean> {
+  const isEmail = /@/.test(emailOrOpenId);
+  const filter = isEmail
+    ? { email: emailOrOpenId.toLowerCase() }
+    : { openId: emailOrOpenId };
+
+  if (isMongoConnected()) {
+    try {
+      const mUser = await MongoUser.findOne(filter);
+      if (mUser) {
+        await BuyerProfile.deleteMany({ userId: mUser._id });
+        await SupplierProfile.deleteMany({ userId: mUser._id });
+        await MongoUser.deleteOne({ _id: mUser._id });
+      }
+    } catch (e) {
+      console.warn("[MongoDB] deleteUser failed:", e);
+    }
+  }
+
+  const idx = localStore.users.findIndex(
+    (u) =>
+      (isEmail && u.email?.toLowerCase() === emailOrOpenId.toLowerCase()) ||
+      (!isEmail && u.openId === emailOrOpenId)
+  );
+  if (idx >= 0) {
+    localStore.users.splice(idx, 1);
+    saveLocalStore(localStore);
+  }
+
+  return true;
 }
 
 // -------------------------------------------------------------

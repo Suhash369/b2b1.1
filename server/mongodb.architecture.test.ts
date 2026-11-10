@@ -388,4 +388,90 @@ describe("BazroKart Complete MongoDB Architecture & Multi-Collection Integrity",
     const userCount = await User.countDocuments();
     expect(userCount).toBeGreaterThanOrEqual(2);
   });
+
+  it("13. Users (both buyer and supplier) can register again with the same email if deleted from database", async () => {
+    const caller = appRouter.createCaller({
+      user: null as any,
+      req: { protocol: "http", headers: {} } as any,
+      res: { cookie: () => {}, clearCookie: () => {} } as any,
+    });
+
+    const testReRegisterEmail = `reregister_${Date.now()}@industrialnetwork.in`;
+
+    // Step A: Register initially as Buyer
+    const regBuyer = await caller.auth.register({
+      name: "Initial Buyer User",
+      email: testReRegisterEmail,
+      password: "StrongPassword123!",
+      companyName: "First Era Infra",
+      role: "buyer",
+      phone: "+91 98888 11111",
+      city: "Chennai",
+      state: "Tamil Nadu",
+    });
+    expect(regBuyer.success).toBe(true);
+
+    // Step B: Verify attempting to register again while account exists is rejected
+    await expect(
+      caller.auth.register({
+        name: "Duplicate Attempt",
+        email: testReRegisterEmail,
+        password: "StrongPassword123!",
+        companyName: "Duplicate Org",
+        role: "buyer",
+      })
+    ).rejects.toThrow("An account with this email address already exists");
+
+    // Step C: Delete the account from database (simulating user or admin deletion in MongoDB)
+    await User.deleteOne({ email: testReRegisterEmail });
+    // Verify db.getUserByEmail immediately recognizes the deletion and purges any stale store
+    const checkDeleted = await db.getUserByEmail(testReRegisterEmail);
+    expect(checkDeleted).toBeUndefined();
+
+    // Step D: Now register again with the SAME email address, this time as Supplier / Manufacturer
+    const regSupplierAgain = await caller.auth.register({
+      name: "Reborn Supplier User",
+      email: testReRegisterEmail,
+      password: "StrongPassword456!",
+      companyName: "Second Era Precision Works",
+      role: "seller",
+      phone: "+91 97777 22222",
+      city: "Coimbatore",
+      state: "Tamil Nadu",
+    });
+    expect(regSupplierAgain.success).toBe(true);
+    expect(regSupplierAgain.user?.role).toBe("seller");
+
+    // Step E: Verify the new SupplierProfile exists in MongoDB and old BuyerProfile is not orphaned
+    const newMongoUser = await User.findOne({ email: testReRegisterEmail });
+    expect(newMongoUser).toBeDefined();
+    expect(newMongoUser?.role).toBe("supplier");
+
+    const supplierProfile = await SupplierProfile.findOne({ userId: newMongoUser?._id });
+    expect(supplierProfile).toBeDefined();
+    expect(supplierProfile?.companyName).toBe("Second Era Precision Works");
+
+    // Step F: Delete again and re-register back as Buyer to verify full bi-directional support
+    await User.deleteOne({ email: testReRegisterEmail });
+    const checkDeleted2 = await db.getUserByEmail(testReRegisterEmail);
+    expect(checkDeleted2).toBeUndefined();
+
+    const regBuyerAgain = await caller.auth.register({
+      name: "Reborn Buyer User",
+      email: testReRegisterEmail,
+      password: "StrongPassword789!",
+      companyName: "Third Era Logistics",
+      role: "buyer",
+      phone: "+91 96666 33333",
+      city: "Salem",
+      state: "Tamil Nadu",
+    });
+    expect(regBuyerAgain.success).toBe(true);
+    expect(regBuyerAgain.user?.role).toBe("buyer");
+
+    // Clean up test account
+    await User.deleteOne({ email: testReRegisterEmail });
+    await BuyerProfile.deleteMany({ userId: newMongoUser?._id });
+    await SupplierProfile.deleteMany({ userId: newMongoUser?._id });
+  });
 });

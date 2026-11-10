@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { connectMongoDB, isMongoConnected } from "../config/database";
 import {
   User,
@@ -15,6 +17,20 @@ import {
   EnterpriseApplication,
 } from "../models";
 import { logAuditEvent } from "./auditService";
+
+const DATA_DIR = path.resolve(process.cwd(), "server", "data");
+const STORE_FILE = path.join(DATA_DIR, "marketplace-store.json");
+
+function persistLocalStore(store: any) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(STORE_FILE, JSON.stringify(store, null, 2), "utf-8");
+  } catch (e) {
+    console.error("[DBInit] Failed to persist localStore:", e);
+  }
+}
 
 export async function syncLocalStoreToMongoDB(localStore: any): Promise<void> {
   if (!isMongoConnected()) {
@@ -52,91 +68,59 @@ export async function syncLocalStoreToMongoDB(localStore: any): Promise<void> {
       console.log(`[DBInit] Synced ${localStore.categories.length} categories to MongoDB.`);
     }
 
-    // 2. Sync Users & Profiles
-    if (localStore.users && localStore.users.length > 0) {
-      let syncedUsers = 0;
-      for (const u of localStore.users) {
-        if (!u.email) continue;
-        const normalizedRole = u.role === "seller" ? "supplier" : u.role || "buyer";
+    // 2. Sync Users & Profiles (Authoritative MongoDB Sync)
+    // Deleting a user in MongoDB must cascade-delete profiles and prune localStore
+    const allMongoUsers = await User.find({});
+    const activeUserIds = allMongoUsers.map((u) => u._id);
+    const activeEmails = new Set(allMongoUsers.map((u) => u.email.toLowerCase()));
 
-        const userDoc = await User.findOneAndUpdate(
-          { email: u.email.toLowerCase() },
-          {
-            $set: {
-              name: u.name || "Commercial User",
-              email: u.email.toLowerCase(),
-              passwordHash: u.passwordHash || null,
-              role: normalizedRole,
-              accountStatus: "active",
-              emailVerified: Boolean(u.isVerified),
-              openId: u.openId || `usr_${u.id}`,
-              numericId: u.id,
-              phone: u.phone || null,
-              companyName: u.companyName || null,
-              gstNumber: u.gstNumber || null,
-              address: u.address || null,
-              city: u.city || null,
-              state: u.state || null,
-              isVerified: Boolean(u.isVerified),
-              loginMethod: u.loginMethod || "credentials",
-              lastLogin: u.lastSignedIn ? new Date(u.lastSignedIn) : new Date(),
-            },
-          },
-          { upsert: true, returnDocument: "after" }
-        );
-
-        if (userDoc) {
-          // If buyer, ensure BuyerProfile exists
-          if (normalizedRole === "buyer") {
-            await BuyerProfile.findOneAndUpdate(
-              { userId: userDoc._id },
-              {
-                $set: {
-                  userId: userDoc._id,
-                  companyName: u.companyName || u.name,
-                  businessType: "Commercial Procurement",
-                  country: "India",
-                  state: u.state || "Tamil Nadu",
-                  city: u.city || "Chennai",
-                  address: u.address || "",
-                  phone: u.phone || "",
-                  businessDescription: `Registered buyer on BazroKart commercial network.`,
-                },
-              },
-              { upsert: true }
-            );
-          }
-
-          // If supplier, ensure SupplierProfile exists
-          if (normalizedRole === "supplier" || u.role === "seller") {
-            await SupplierProfile.findOneAndUpdate(
-              { userId: userDoc._id },
-              {
-                $set: {
-                  userId: userDoc._id,
-                  companyName: u.companyName || u.name,
-                  companyType: "OEM Manufacturer & Supplier",
-                  businessDescription: `Verified manufacturer and component supplier.`,
-                  country: "India",
-                  state: u.state || "Tamil Nadu",
-                  city: u.city || "Chennai",
-                  address: u.address || "",
-                  contactDetails: {
-                    phone: u.phone || "",
-                    email: u.email || "",
-                    representativeName: u.name || "",
-                  },
-                  verificationStatus: u.isVerified ? "verified" : "pending",
-                },
-              },
-              { upsert: true }
-            );
-          }
-          syncedUsers++;
-        }
-      }
-      console.log(`[DBInit] Synced ${syncedUsers} users & profiles to MongoDB.`);
+    // Clean up any orphaned profiles whose user was deleted from the users collection
+    if (activeUserIds.length > 0) {
+      await BuyerProfile.deleteMany({ userId: { $nin: activeUserIds } });
+      await SupplierProfile.deleteMany({ userId: { $nin: activeUserIds } });
+    } else {
+      await BuyerProfile.deleteMany({});
+      await SupplierProfile.deleteMany({});
     }
+
+    // Prune deleted users from localStore.users so deleted accounts never resurrect
+    if (localStore.users && localStore.users.length > 0) {
+      localStore.users = localStore.users.filter(
+        (u: any) => u.email && activeEmails.has(u.email.toLowerCase())
+      );
+    } else if (!localStore.users) {
+      localStore.users = [];
+    }
+
+    // Populate active MongoDB users into localStore.users
+    for (const mUser of allMongoUsers) {
+      const exists = localStore.users.some(
+        (u: any) => u.email && u.email.toLowerCase() === mUser.email.toLowerCase()
+      );
+      if (!exists) {
+        localStore.users.push({
+          id: mUser.numericId || localStore.users.length + 1,
+          openId: mUser.openId || `usr_${mUser.numericId || Date.now()}`,
+          name: mUser.name,
+          email: mUser.email,
+          phone: mUser.phone || null,
+          companyName: mUser.companyName || null,
+          gstNumber: mUser.gstNumber || null,
+          address: mUser.address || null,
+          city: mUser.city || null,
+          state: mUser.state || null,
+          loginMethod: mUser.loginMethod || "credentials",
+          role: mUser.role === "supplier" ? "seller" : mUser.role,
+          isVerified: Boolean(mUser.isVerified),
+          passwordHash: mUser.passwordHash || null,
+          createdAt: mUser.createdAt,
+          updatedAt: mUser.updatedAt,
+          lastSignedIn: mUser.lastLogin || mUser.updatedAt,
+        });
+      }
+    }
+    persistLocalStore(localStore);
+    console.log(`[DBInit] Authoritative user sync complete (${allMongoUsers.length} active users in MongoDB).`);
 
     // 3. Sync Products
     if (localStore.products && localStore.products.length > 0) {
