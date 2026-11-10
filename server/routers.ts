@@ -669,6 +669,22 @@ export const appRouter = router({
           message: input.message,
         });
       }),
+
+    deleteMember: publicProcedure
+      .input(
+        z.object({
+          id: z.string().optional(),
+          companyName: z.string().optional(),
+          email: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        return db.deleteEnterpriseApplication({
+          id: input.id,
+          companyName: input.companyName,
+          email: input.email || ctx.user?.email || undefined,
+        });
+      }),
   }),
 
   // -------------------------------------------------------------
@@ -724,6 +740,27 @@ export const appRouter = router({
           ...input,
           employeeCount: input.employeeCount || null,
           annualTurnover: input.annualTurnover || null,
+        });
+      }),
+
+    myApplications: publicProcedure.query(async ({ ctx }) => {
+      if (!ctx.user) return [];
+      return db.getEnterpriseApplicationsByUser(ctx.user.email, ctx.user.companyName);
+    }),
+
+    deleteApplication: publicProcedure
+      .input(
+        z.object({
+          id: z.string().optional(),
+          companyName: z.string().optional(),
+          email: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        return db.deleteEnterpriseApplication({
+          id: input.id,
+          companyName: input.companyName,
+          email: input.email || ctx.user?.email || undefined,
         });
       }),
   }),

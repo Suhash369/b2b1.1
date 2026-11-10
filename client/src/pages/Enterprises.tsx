@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Building, Rocket, ShieldCheck, HeartHandshake, Cpu, CheckCircle2, ArrowRight } from "lucide-react";
+import { Building, Rocket, ShieldCheck, HeartHandshake, Cpu, CheckCircle2, ArrowRight, Trash2, ExternalLink } from "lucide-react";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
 import { CartItem } from "@/types";
@@ -28,6 +28,9 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
   const { data: user } = trpc.auth.me.useQuery();
   const { data: categories = [] } = trpc.enterprises.listCategories.useQuery();
   const applyMutation = trpc.enterprises.submitApplication.useMutation();
+  const utils = trpc.useUtils();
+  const { data: myApps = [], refetch: refetchMyApps } = trpc.enterprises.myApplications.useQuery();
+  const deleteAppMutation = trpc.enterprises.deleteApplication.useMutation();
 
   useEffect(() => {
     if (user) {
@@ -57,6 +60,8 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
         needs: needs || `Empanelment application for ${companyName} under ${selectedCategory} category.`,
       });
       setIsSubmitted(true);
+      refetchMyApps();
+      utils.network.listMembers.invalidate();
       toast.success("Enterprise empanelment application submitted successfully!");
     } catch (err: any) {
       toast.error(err.message || "Failed to submit application. Please review form fields.");
@@ -117,6 +122,78 @@ export default function Enterprises({ cartItems = [] }: EnterprisesProps) {
               </div>
             ))}
           </div>
+
+          {/* Active Empanelment Applications for Current User */}
+          {myApps && myApps.length > 0 && (
+            <div className="bg-white rounded-2xl border border-orange-200 p-6 shadow-sm max-w-3xl mx-auto space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 bg-orange-100 text-[#FF7A00] text-[11px] font-bold rounded-full">
+                    Active Empanelment Registration
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">({myApps.length} active)</span>
+                </div>
+                <Link
+                  href="/networks"
+                  className="text-xs font-bold text-[#FF7A00] hover:text-[#EA580C] flex items-center gap-1"
+                >
+                  <span>View in Networks</span>
+                  <ExternalLink size={12} />
+                </Link>
+              </div>
+
+              <div className="space-y-3">
+                {myApps.map((app: any) => (
+                  <div
+                    key={app.id}
+                    className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-heading font-bold text-base text-[#0F172A]">{app.companyName}</h4>
+                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase">
+                          {app.enterpriseCategory}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600">
+                        <strong>Contact:</strong> {app.contactPerson} ({app.email}) � {app.city}, {app.state}
+                      </p>
+                      <p className="text-xs text-slate-500 line-clamp-1">
+                        <strong>Needs:</strong> {app.needs}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                      <button
+                        type="button"
+                        disabled={deleteAppMutation.isPending}
+                        onClick={async () => {
+                          if (confirm(`Are you sure you want to delete and withdraw the empanelment application for ${app.companyName}?`)) {
+                            try {
+                              await deleteAppMutation.mutateAsync({
+                                id: app.id,
+                                companyName: app.companyName,
+                                email: app.email,
+                              });
+                              toast.success(`Empanelment for ${app.companyName} deleted successfully.`);
+                              refetchMyApps();
+                              utils.network.listMembers.invalidate();
+                            } catch (err: any) {
+                              toast.error(err.message || "Failed to delete empanelment.");
+                            }
+                          }
+                        }}
+                        className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                      >
+                        <Trash2 size={13} />
+                        <span>Delete Empanelment</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Empanelment Application Form */}
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm max-w-3xl mx-auto space-y-6">

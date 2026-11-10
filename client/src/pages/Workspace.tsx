@@ -28,6 +28,7 @@ import {
   Bell,
   Trash2,
   Upload,
+  ExternalLink,
 } from "lucide-react";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
@@ -114,6 +115,9 @@ export default function Workspace({ cartItems = [] }: WorkspaceProps) {
   const { data: adminStats, isLoading: isLoadingAdminStats } = trpc.admin.getStats.useQuery();
   const { data: activeSub } = trpc.subscriptions.getActive.useQuery();
   const { data: quotes = [], refetch: refetchQuotes, isLoading: isLoadingQuotes } = trpc.quotes.listAll.useQuery();
+  const utils = trpc.useUtils();
+  const { data: myEmpanelmentApps = [], refetch: refetchMyEmpanelment } = trpc.enterprises.myApplications.useQuery();
+  const deleteEmpanelmentMutation = trpc.enterprises.deleteApplication.useMutation();
 
   // Queries for the selected RFQ's quotes
   const { data: rfqQuotes = [], refetch: refetchRfqQuotes } = trpc.quotes.listForRfq.useQuery(
@@ -357,6 +361,72 @@ export default function Workspace({ cartItems = [] }: WorkspaceProps) {
               </div>
             );
           })()}
+
+          {/* Empaneled Enterprise Network Status */}
+          {myEmpanelmentApps && myEmpanelmentApps.length > 0 && (
+            <div className="bg-white rounded-2xl border border-orange-200 p-5 shadow-xs space-y-3">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-[#FF7A00] flex items-center justify-center shrink-0">
+                    <Building size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-heading font-bold text-sm text-[#0F172A]">
+                        Institutional Empanelment: {myEmpanelmentApps[0].companyName}
+                      </h4>
+                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase">
+                        {myEmpanelmentApps[0].enterpriseCategory} Empaneled
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Your business profile is actively listed and verified on BazroKart Business Networks directory.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                  <Link
+                    href="/networks"
+                    className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+                  >
+                    <span>View in Networks</span>
+                    <ExternalLink size={12} />
+                  </Link>
+                  <button
+                    type="button"
+                    disabled={deleteEmpanelmentMutation.isPending}
+                    onClick={async () => {
+                      if (
+                        confirm(
+                          `Are you sure you want to delete and withdraw the empanelment registration for ${myEmpanelmentApps[0].companyName}?`
+                        )
+                      ) {
+                        try {
+                          await deleteEmpanelmentMutation.mutateAsync({
+                            id: myEmpanelmentApps[0].id,
+                            companyName: myEmpanelmentApps[0].companyName,
+                            email: myEmpanelmentApps[0].email,
+                          });
+                          toast.success(
+                            `Empanelment for ${myEmpanelmentApps[0].companyName} deleted successfully.`
+                          );
+                          refetchMyEmpanelment();
+                          utils.network.listMembers.invalidate();
+                        } catch (err: any) {
+                          toast.error(err.message || "Failed to delete empanelment.");
+                        }
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                  >
+                    <Trash2 size={12} />
+                    <span>Delete Empanelment</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Section: RFQs (Buyer & Supplier Views) */}
           <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden">

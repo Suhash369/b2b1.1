@@ -244,6 +244,38 @@ export async function syncLocalStoreToMongoDB(localStore: any): Promise<void> {
       }
     }
 
+    // 7. Sync Enterprise Applications (Authoritative MongoDB Sync)
+    const mongoApps = await EnterpriseApplication.find({});
+    if (mongoApps.length > 0) {
+      localStore.enterpriseApplications = mongoApps.map((a: any) => ({
+        id: a.id || a._id.toString(),
+        enterpriseCategory: (["startup", "msme", "social_enterprise", "innovative_business"].includes(a.enterpriseCategory)
+          ? a.enterpriseCategory
+          : "msme") as "startup" | "msme" | "social_enterprise" | "innovative_business",
+        companyName: a.companyName,
+        contactPerson: a.contactPerson,
+        email: a.email,
+        phone: a.phone,
+        city: a.city,
+        state: a.state,
+        businessStage: a.businessStage,
+        employeeCount: a.employeeCount ?? null,
+        annualTurnover: a.annualTurnover ?? null,
+        needs: a.needs,
+        status: (a.status === "approved" || a.status === "empanelled"
+          ? "approved"
+          : a.status === "under_review" || a.status === "reviewing"
+          ? "under_review"
+          : "submitted") as "submitted" | "under_review" | "approved",
+        createdAt: a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt || Date.now()),
+      }));
+      persistLocalStore(localStore);
+      console.log(`[DBInit] Synced ${mongoApps.length} enterprise applications from MongoDB.`);
+    } else {
+      localStore.enterpriseApplications = [];
+      persistLocalStore(localStore);
+    }
+
     // Record audit event
     await logAuditEvent({
       action: "INITIAL_DATABASE_SYNC",

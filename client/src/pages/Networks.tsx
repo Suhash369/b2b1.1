@@ -13,6 +13,7 @@ import {
   Star,
   MapPin,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
@@ -39,8 +40,12 @@ export default function Networks({ cartItems = [] }: NetworksProps) {
     }
   }, [user]);
 
+  const utils = trpc.useUtils();
   const { data: companies = [] } = trpc.network.listMembers.useQuery();
   const sendConnectionMutation = trpc.network.sendConnection.useMutation();
+  const deleteMemberMutation = trpc.network.deleteMember.useMutation();
+  const [selectedDeleteCompany, setSelectedDeleteCompany] = useState<any | null>(null);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
 
   const filteredCompanies = companies.filter((c) => {
     if (!searchQuery) return true;
@@ -182,18 +187,32 @@ export default function Networks({ cartItems = [] }: NetworksProps) {
                     </div>
                   </div>
 
-                  <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+                  <div className="pt-2 flex items-center justify-between border-t border-slate-100 gap-2">
                     <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
                       <Star size={13} className="fill-amber-400 text-amber-400" /> {comp.rating}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenConnect(comp.name)}
-                      className="px-4 py-2 bg-[#0B0F19] hover:bg-[#030712] text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
-                    >
-                      <span>Connect</span>
-                      <Send size={12} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedDeleteCompany(comp);
+                          setDeleteConfirmEmail("");
+                        }}
+                        className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 shadow-xs"
+                        title="Delete Empanelment Registration"
+                      >
+                        <Trash2 size={12} />
+                        <span>Delete</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenConnect(comp.name)}
+                        className="px-4 py-2 bg-[#0B0F19] hover:bg-[#030712] text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
+                      >
+                        <span>Connect</span>
+                        <Send size={12} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -309,6 +328,113 @@ export default function Networks({ cartItems = [] }: NetworksProps) {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Empanelment Confirmation Modal */}
+      {selectedDeleteCompany && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#030712]/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="p-5 bg-rose-600 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                  <Trash2 size={18} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-base text-white">
+                    Delete Empanelment Registration
+                  </h3>
+                  <p className="text-[11px] text-rose-100">{selectedDeleteCompany.name}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedDeleteCompany(null)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-rose-100 hover:text-white hover:bg-white/10"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900 leading-relaxed">
+                <strong>Attention:</strong> This will remove{" "}
+                <span className="font-semibold">{selectedDeleteCompany.name}</span> from the
+                Verified Business Networks directory and delete the empanelment application from the database.
+              </div>
+
+              {user &&
+              (user.role === "admin" ||
+                (user.email &&
+                  selectedDeleteCompany.email &&
+                  user.email.toLowerCase() === selectedDeleteCompany.email.toLowerCase()) ||
+                (user.companyName &&
+                  user.companyName.toLowerCase() === selectedDeleteCompany.name.toLowerCase())) ? (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>
+                    Authenticated representative: <strong>{user.companyName || user.name}</strong> ({user.email}).
+                  </span>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Confirm Registered Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={deleteConfirmEmail}
+                    onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+                    placeholder={
+                      selectedDeleteCompany.email
+                        ? `e.g. ${selectedDeleteCompany.email}`
+                        : "Enter registered contact email"
+                    }
+                    className="w-full h-10 px-3 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-rose-500"
+                  />
+                  <p className="text-[11px] text-slate-500">
+                    Buyers and suppliers can delete their empanelment by confirming their registered email.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDeleteCompany(null)}
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={deleteMemberMutation.isPending}
+                  onClick={async () => {
+                    try {
+                      await deleteMemberMutation.mutateAsync({
+                        id: selectedDeleteCompany.applicationId || selectedDeleteCompany.id,
+                        companyName: selectedDeleteCompany.name,
+                        email: deleteConfirmEmail || user?.email || selectedDeleteCompany.email,
+                      });
+                      toast.success(
+                        `Empanelment for ${selectedDeleteCompany.name} deleted successfully.`
+                      );
+                      setSelectedDeleteCompany(null);
+                      utils.network.listMembers.invalidate();
+                    } catch (err: any) {
+                      toast.error(err.message || "Failed to delete empanelment.");
+                    }
+                  }}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                >
+                  <Trash2 size={13} />
+                  <span>
+                    {deleteMemberMutation.isPending ? "Deleting..." : "Confirm Delete Empanelment"}
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

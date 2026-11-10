@@ -1342,6 +1342,8 @@ export interface NetworkMember {
   isVerified: boolean;
   rating: string;
   activeRequirements: string;
+  applicationId?: string;
+  email?: string;
 }
 
 export async function listNetworkMembers(): Promise<NetworkMember[]> {
@@ -1355,8 +1357,47 @@ export async function listNetworkMembers(): Promise<NetworkMember[]> {
     innovative_business: "Industrial Technology & Systems",
   };
 
+  // If MongoDB connected, fetch applications from MongoDB authoritative database
+  let apps = localStore.enterpriseApplications || [];
+  if (isMongoConnected()) {
+    try {
+      const mApps = await MongoEnterpriseApplication.find({});
+      if (mApps.length > 0) {
+        apps = mApps.map((a: any) => ({
+          id: a.id || a._id.toString(),
+          enterpriseCategory: (["startup", "msme", "social_enterprise", "innovative_business"].includes(a.enterpriseCategory)
+            ? a.enterpriseCategory
+            : "msme") as "startup" | "msme" | "social_enterprise" | "innovative_business",
+          companyName: a.companyName,
+          contactPerson: a.contactPerson,
+          email: a.email,
+          phone: a.phone,
+          city: a.city,
+          state: a.state,
+          businessStage: a.businessStage,
+          employeeCount: a.employeeCount ?? null,
+          annualTurnover: a.annualTurnover ?? null,
+          needs: a.needs,
+          status: (a.status === "approved" || a.status === "empanelled"
+            ? "approved"
+            : a.status === "under_review" || a.status === "reviewing"
+            ? "under_review"
+            : "submitted") as "submitted" | "under_review" | "approved",
+          createdAt: a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt || Date.now()),
+        }));
+        localStore.enterpriseApplications = apps;
+        saveLocalStore(localStore);
+      } else {
+        apps = [];
+        localStore.enterpriseApplications = [];
+        saveLocalStore(localStore);
+      }
+    } catch (e: any) {
+      console.warn("[MongoDB] listNetworkMembers error fetching enterprise apps:", e.message);
+    }
+  }
+
   // 1. Entities from Enterprise Empanelment Applications
-  const apps = localStore.enterpriseApplications || [];
   for (const app of apps) {
     if (!app.companyName || !app.companyName.trim()) continue;
     const norm = app.companyName.trim().toLowerCase();
@@ -1381,6 +1422,8 @@ export async function listNetworkMembers(): Promise<NetworkMember[]> {
       isVerified: true,
       rating: "4.9",
       activeRequirements: app.needs || "Direct Sourcing & Verified Supply Agreements",
+      applicationId: app.id,
+      email: app.email,
     });
   }
 
@@ -1404,6 +1447,13 @@ export async function listNetworkMembers(): Promise<NetworkMember[]> {
     if (seenNames.has(norm)) continue;
     seenNames.add(norm);
 
+    const matchingApp = apps.find(
+      (app) =>
+        (app.email && u.email && app.email.trim().toLowerCase() === u.email.trim().toLowerCase()) ||
+        (app.companyName &&
+          app.companyName.trim().toLowerCase() === u.companyName?.trim().toLowerCase())
+    );
+
     const city = u.city ? (u.state ? `${u.city}, ${u.state}` : u.city) : "Pan-India";
     members.push({
       id: `usr-ent-${u.id}`,
@@ -1420,6 +1470,8 @@ export async function listNetworkMembers(): Promise<NetworkMember[]> {
         (u.role as string) === "seller" || (u.role as string) === "supplier"
           ? "OEM Production Lots & Commercial Dispatches"
           : "High-Volume Factory Procurement",
+      applicationId: matchingApp?.id,
+      email: u.email || matchingApp?.email,
     });
   }
 
@@ -1518,6 +1570,113 @@ export async function createEnterpriseApplication(
   }
 
   return app;
+}
+
+export async function getEnterpriseApplicationsByUser(
+  email?: string | null,
+  companyName?: string | null
+): Promise<EnterpriseApplication[]> {
+  const normEmail = email?.trim().toLowerCase();
+  const normName = companyName?.trim().toLowerCase();
+
+  if (isMongoConnected()) {
+    try {
+      const orClauses: any[] = [];
+      if (normEmail) {
+        orClauses.push({ email: { $regex: new RegExp(`^${normEmail}$`, "i") } });
+      }
+      if (normName) {
+        orClauses.push({ companyName: { $regex: new RegExp(`^${normName}$`, "i") } });
+      }
+      if (orClauses.length > 0) {
+        const docs = await MongoEnterpriseApplication.find({ $or: orClauses }).lean();
+        return docs.map((d: any) => ({
+          id: d.id || d._id.toString(),
+          enterpriseCategory: d.enterpriseCategory,
+          companyName: d.companyName,
+          contactPerson: d.contactPerson,
+          email: d.email,
+          phone: d.phone,
+          city: d.city,
+          state: d.state,
+          businessStage: d.businessStage,
+          employeeCount: d.employeeCount,
+          annualTurnover: d.annualTurnover,
+          needs: d.needs,
+          status: d.status,
+          createdAt: d.createdAt,
+        }));
+      }
+    } catch (e: any) {
+      console.warn("[MongoDB] getEnterpriseApplicationsByUser error:", e.message);
+    }
+  }
+
+  return (localStore.enterpriseApplications || []).filter((app) => {
+    if (normEmail && app.email.trim().toLowerCase() === normEmail) return true;
+    if (normName && app.companyName.trim().toLowerCase() === normName) return true;
+    return false;
+  });
+}
+
+export async function deleteEnterpriseApplication(params: {
+  id?: string;
+  companyName?: string;
+  email?: string;
+}): Promise<{ success: boolean; deletedCount: number; message: string }> {
+  const { id, companyName, email } = params;
+  let deletedCount = 0;
+
+  const targetId = id?.startsWith("usr-ent-") ? undefined : id;
+  const normName = companyName?.trim().toLowerCase();
+  const normEmail = email?.trim().toLowerCase();
+
+  // 1. Delete from localStore
+  const initialLen = localStore.enterpriseApplications.length;
+  localStore.enterpriseApplications = localStore.enterpriseApplications.filter((app) => {
+    if (targetId && app.id === targetId) return false;
+    if (normName && app.companyName.trim().toLowerCase() === normName) return false;
+    if (normEmail && app.email.trim().toLowerCase() === normEmail) return false;
+    return true;
+  });
+  deletedCount = initialLen - localStore.enterpriseApplications.length;
+  saveLocalStore(localStore);
+
+  // 2. Delete from MongoDB
+  if (isMongoConnected()) {
+    try {
+      const orClauses: any[] = [];
+      if (targetId) {
+        orClauses.push({ id: targetId });
+        if (mongoose.Types.ObjectId.isValid(targetId)) {
+          orClauses.push({ _id: targetId });
+        }
+      }
+      if (normName) {
+        orClauses.push({
+          companyName: { $regex: new RegExp(`^${companyName?.trim()}$`, "i") },
+        });
+      }
+      if (normEmail) {
+        orClauses.push({
+          email: { $regex: new RegExp(`^${email?.trim()}$`, "i") },
+        });
+      }
+
+      if (orClauses.length > 0) {
+        const res = await MongoEnterpriseApplication.deleteMany({ $or: orClauses });
+        deletedCount = Math.max(deletedCount, res.deletedCount || 0);
+      }
+    } catch (e: any) {
+      console.warn("[MongoDB] deleteEnterpriseApplication error:", e.message);
+    }
+  }
+
+  return {
+    success: true,
+    deletedCount,
+    message: "Enterprise empanelment application deleted successfully.",
+  };
 }
 
 // -------------------------------------------------------------

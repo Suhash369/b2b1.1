@@ -474,4 +474,52 @@ describe("BazroKart Complete MongoDB Architecture & Multi-Collection Integrity",
     await BuyerProfile.deleteMany({ userId: newMongoUser?._id });
     await SupplierProfile.deleteMany({ userId: newMongoUser?._id });
   });
+
+  it("14. Empanelment registration can be deleted by buyer and supplier with immediate removal from verified networks", async () => {
+    const caller = appRouter.createCaller({
+      user: null as any,
+      req: { protocol: "http", headers: {} } as any,
+      res: { cookie: () => {}, clearCookie: () => {} } as any,
+    });
+
+    const testEmpanelmentEmail = `empanelment_delete_${Date.now()}@averon.in`;
+    const testCompanyName = `Averon Test Corp ${Date.now()}`;
+
+    // 1. Submit an enterprise empanelment application
+    const appResult = await caller.enterprises.submitApplication({
+      enterpriseCategory: "msme",
+      companyName: testCompanyName,
+      contactPerson: "Siva Verified Lead",
+      email: testEmpanelmentEmail,
+      phone: "+91 73058 52492",
+      city: "Chennai",
+      state: "Tamil Nadu",
+      businessStage: "Operational (1-3 Years)",
+      employeeCount: "10-50 Employees",
+      annualTurnover: "₹1 Cr - ₹5 Cr",
+      needs: `Empanelment application for ${testCompanyName} under msme category.`,
+    });
+
+    expect(appResult).toBeDefined();
+    expect(appResult.companyName).toBe(testCompanyName);
+
+    // 2. Verify it is listed in Verified Business Networks
+    const membersBefore = await caller.network.listMembers();
+    const foundMember = membersBefore.find((m) => m.name === testCompanyName);
+    expect(foundMember).toBeDefined();
+    expect(foundMember?.email).toBe(testEmpanelmentEmail);
+
+    // 3. Delete the empanelment registration using deleteMember
+    const delResult = await caller.network.deleteMember({
+      id: appResult.id,
+      companyName: testCompanyName,
+      email: testEmpanelmentEmail,
+    });
+    expect(delResult.success).toBe(true);
+
+    // 4. Verify it is immediately removed from Verified Business Networks
+    const membersAfter = await caller.network.listMembers();
+    const afterFound = membersAfter.find((m) => m.name === testCompanyName);
+    expect(afterFound).toBeUndefined();
+  });
 });

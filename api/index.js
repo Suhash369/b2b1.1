@@ -123085,6 +123085,30 @@ async function syncLocalStoreToMongoDB(localStore2) {
         );
       }
     }
+    const mongoApps = await EnterpriseApplication.find({});
+    if (mongoApps.length > 0) {
+      localStore2.enterpriseApplications = mongoApps.map((a) => ({
+        id: a.id || a._id.toString(),
+        enterpriseCategory: ["startup", "msme", "social_enterprise", "innovative_business"].includes(a.enterpriseCategory) ? a.enterpriseCategory : "msme",
+        companyName: a.companyName,
+        contactPerson: a.contactPerson,
+        email: a.email,
+        phone: a.phone,
+        city: a.city,
+        state: a.state,
+        businessStage: a.businessStage,
+        employeeCount: a.employeeCount ?? null,
+        annualTurnover: a.annualTurnover ?? null,
+        needs: a.needs,
+        status: a.status === "approved" || a.status === "empanelled" ? "approved" : a.status === "under_review" || a.status === "reviewing" ? "under_review" : "submitted",
+        createdAt: a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt || Date.now())
+      }));
+      persistLocalStore(localStore2);
+      console.log(`[DBInit] Synced ${mongoApps.length} enterprise applications from MongoDB.`);
+    } else {
+      localStore2.enterpriseApplications = [];
+      persistLocalStore(localStore2);
+    }
     await logAuditEvent({
       action: "INITIAL_DATABASE_SYNC",
       module: "SYSTEM",
@@ -124085,7 +124109,38 @@ async function listNetworkMembers() {
     social_enterprise: "Social Enterprise & Cooperatives",
     innovative_business: "Industrial Technology & Systems"
   };
-  const apps = localStore.enterpriseApplications || [];
+  let apps = localStore.enterpriseApplications || [];
+  if (isMongoConnected()) {
+    try {
+      const mApps = await EnterpriseApplication.find({});
+      if (mApps.length > 0) {
+        apps = mApps.map((a) => ({
+          id: a.id || a._id.toString(),
+          enterpriseCategory: ["startup", "msme", "social_enterprise", "innovative_business"].includes(a.enterpriseCategory) ? a.enterpriseCategory : "msme",
+          companyName: a.companyName,
+          contactPerson: a.contactPerson,
+          email: a.email,
+          phone: a.phone,
+          city: a.city,
+          state: a.state,
+          businessStage: a.businessStage,
+          employeeCount: a.employeeCount ?? null,
+          annualTurnover: a.annualTurnover ?? null,
+          needs: a.needs,
+          status: a.status === "approved" || a.status === "empanelled" ? "approved" : a.status === "under_review" || a.status === "reviewing" ? "under_review" : "submitted",
+          createdAt: a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt || Date.now())
+        }));
+        localStore.enterpriseApplications = apps;
+        saveLocalStore(localStore);
+      } else {
+        apps = [];
+        localStore.enterpriseApplications = [];
+        saveLocalStore(localStore);
+      }
+    } catch (e) {
+      console.warn("[MongoDB] listNetworkMembers error fetching enterprise apps:", e.message);
+    }
+  }
   for (const app2 of apps) {
     if (!app2.companyName || !app2.companyName.trim()) continue;
     const norm = app2.companyName.trim().toLowerCase();
@@ -124104,7 +124159,9 @@ async function listNetworkMembers() {
       gstin,
       isVerified: true,
       rating: "4.9",
-      activeRequirements: app2.needs || "Direct Sourcing & Verified Supply Agreements"
+      activeRequirements: app2.needs || "Direct Sourcing & Verified Supply Agreements",
+      applicationId: app2.id,
+      email: app2.email
     });
   }
   const registeredCommercial = localStore.users.filter(
@@ -124116,6 +124173,9 @@ async function listNetworkMembers() {
     const norm = u.companyName.trim().toLowerCase();
     if (seenNames.has(norm)) continue;
     seenNames.add(norm);
+    const matchingApp = apps.find(
+      (app2) => app2.email && u.email && app2.email.trim().toLowerCase() === u.email.trim().toLowerCase() || app2.companyName && app2.companyName.trim().toLowerCase() === u.companyName?.trim().toLowerCase()
+    );
     const city = u.city ? u.state ? `${u.city}, ${u.state}` : u.city : "Pan-India";
     members.push({
       id: `usr-ent-${u.id}`,
@@ -124125,7 +124185,9 @@ async function listNetworkMembers() {
       gstin: u.gstNumber || "GST Verified",
       isVerified: true,
       rating: "5.0",
-      activeRequirements: u.role === "seller" || u.role === "supplier" ? "OEM Production Lots & Commercial Dispatches" : "High-Volume Factory Procurement"
+      activeRequirements: u.role === "seller" || u.role === "supplier" ? "OEM Production Lots & Commercial Dispatches" : "High-Volume Factory Procurement",
+      applicationId: matchingApp?.id,
+      email: u.email || matchingApp?.email
     });
   }
   return members;
@@ -124206,6 +124268,95 @@ async function createEnterpriseApplication(input) {
     }
   }
   return app2;
+}
+async function getEnterpriseApplicationsByUser(email3, companyName) {
+  const normEmail = email3?.trim().toLowerCase();
+  const normName = companyName?.trim().toLowerCase();
+  if (isMongoConnected()) {
+    try {
+      const orClauses = [];
+      if (normEmail) {
+        orClauses.push({ email: { $regex: new RegExp(`^${normEmail}$`, "i") } });
+      }
+      if (normName) {
+        orClauses.push({ companyName: { $regex: new RegExp(`^${normName}$`, "i") } });
+      }
+      if (orClauses.length > 0) {
+        const docs = await EnterpriseApplication.find({ $or: orClauses }).lean();
+        return docs.map((d) => ({
+          id: d.id || d._id.toString(),
+          enterpriseCategory: d.enterpriseCategory,
+          companyName: d.companyName,
+          contactPerson: d.contactPerson,
+          email: d.email,
+          phone: d.phone,
+          city: d.city,
+          state: d.state,
+          businessStage: d.businessStage,
+          employeeCount: d.employeeCount,
+          annualTurnover: d.annualTurnover,
+          needs: d.needs,
+          status: d.status,
+          createdAt: d.createdAt
+        }));
+      }
+    } catch (e) {
+      console.warn("[MongoDB] getEnterpriseApplicationsByUser error:", e.message);
+    }
+  }
+  return (localStore.enterpriseApplications || []).filter((app2) => {
+    if (normEmail && app2.email.trim().toLowerCase() === normEmail) return true;
+    if (normName && app2.companyName.trim().toLowerCase() === normName) return true;
+    return false;
+  });
+}
+async function deleteEnterpriseApplication(params) {
+  const { id, companyName, email: email3 } = params;
+  let deletedCount = 0;
+  const targetId = id?.startsWith("usr-ent-") ? void 0 : id;
+  const normName = companyName?.trim().toLowerCase();
+  const normEmail = email3?.trim().toLowerCase();
+  const initialLen = localStore.enterpriseApplications.length;
+  localStore.enterpriseApplications = localStore.enterpriseApplications.filter((app2) => {
+    if (targetId && app2.id === targetId) return false;
+    if (normName && app2.companyName.trim().toLowerCase() === normName) return false;
+    if (normEmail && app2.email.trim().toLowerCase() === normEmail) return false;
+    return true;
+  });
+  deletedCount = initialLen - localStore.enterpriseApplications.length;
+  saveLocalStore(localStore);
+  if (isMongoConnected()) {
+    try {
+      const orClauses = [];
+      if (targetId) {
+        orClauses.push({ id: targetId });
+        if (import_mongoose19.default.Types.ObjectId.isValid(targetId)) {
+          orClauses.push({ _id: targetId });
+        }
+      }
+      if (normName) {
+        orClauses.push({
+          companyName: { $regex: new RegExp(`^${companyName?.trim()}$`, "i") }
+        });
+      }
+      if (normEmail) {
+        orClauses.push({
+          email: { $regex: new RegExp(`^${email3?.trim()}$`, "i") }
+        });
+      }
+      if (orClauses.length > 0) {
+        const res = await EnterpriseApplication.deleteMany({ $or: orClauses });
+        deletedCount = Math.max(deletedCount, res.deletedCount || 0);
+      }
+    } catch (e) {
+      console.warn("[MongoDB] deleteEnterpriseApplication error:", e.message);
+    }
+  }
+  return {
+    success: true,
+    deletedCount,
+    message: "Enterprise empanelment application deleted successfully."
+  };
 }
 async function getAdminStats() {
   return {
@@ -142743,6 +142894,19 @@ var appRouter = router({
         leadType: input.leadType,
         message: input.message
       });
+    }),
+    deleteMember: publicProcedure.input(
+      external_exports.object({
+        id: external_exports.string().optional(),
+        companyName: external_exports.string().optional(),
+        email: external_exports.string().optional()
+      })
+    ).mutation(async ({ input, ctx }) => {
+      return deleteEnterpriseApplication({
+        id: input.id,
+        companyName: input.companyName,
+        email: input.email || ctx.user?.email || void 0
+      });
     })
   }),
   // -------------------------------------------------------------
@@ -142791,6 +142955,23 @@ var appRouter = router({
         ...input,
         employeeCount: input.employeeCount || null,
         annualTurnover: input.annualTurnover || null
+      });
+    }),
+    myApplications: publicProcedure.query(async ({ ctx }) => {
+      if (!ctx.user) return [];
+      return getEnterpriseApplicationsByUser(ctx.user.email, ctx.user.companyName);
+    }),
+    deleteApplication: publicProcedure.input(
+      external_exports.object({
+        id: external_exports.string().optional(),
+        companyName: external_exports.string().optional(),
+        email: external_exports.string().optional()
+      })
+    ).mutation(async ({ input, ctx }) => {
+      return deleteEnterpriseApplication({
+        id: input.id,
+        companyName: input.companyName,
+        email: input.email || ctx.user?.email || void 0
       });
     })
   }),
